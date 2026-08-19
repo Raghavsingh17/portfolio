@@ -1,26 +1,258 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-canvas: #090a0f;
+    --background: #090a0f;
+    --text-primary: #f8fafc;
+    --foreground: #f8fafc;
+    --text-secondary: #9ca3af;
+    --subtle-text: #9ca3af;
+    --bg-card: rgba(15, 23, 42, 0.7);
+    --card-bg: rgba(15, 23, 42, 0.7);
+    --border-color: rgba(255, 255, 255, 0.08);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --accent-glow: rgba(59, 130, 246, 0.35);
+    --primary: #3b82f6;
+    --primary-glow: rgba(59, 130, 246, 0.35);
+    --accent: #8b5cf6;
+    --secondary-glow: rgba(139, 92, 246, 0.35);
+    --grid-line: rgba(255, 255, 255, 0.04);
+  }
+
+  .light {
+    --bg-canvas: #f8fafc;
+    --background: #f8fafc;
+    --text-primary: #0f172a;
+    --foreground: #0f172a;
+    --text-secondary: #475569;
+    --subtle-text: #475569;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --card-bg: rgba(255, 255, 255, 0.9);
+    --border-color: rgba(0, 0, 0, 0.08);
+    --card-border: rgba(0, 0, 0, 0.08);
+    --accent-glow: rgba(37, 99, 235, 0.2);
+    --primary: #2563eb;
+    --primary-glow: rgba(37, 99, 235, 0.2);
+    --accent: #7c3aed;
+    --secondary-glow: rgba(124, 58, 237, 0.2);
+    --grid-line: rgba(0, 0, 0, 0.05);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html {
+  scroll-behavior: smooth;
 }
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
+}
+
+/* Ensure all interactive buttons, links, and elements show cursor pointer */
+button,
+a,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+[role="button"],
+.cursor-pointer,
+summary {
+  cursor: pointer !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
+
+/* Text Selection */
+::selection {
+  background: rgba(59, 130, 246, 0.3);
+  color: #ffffff;
+}
+
+/* Custom Utilities */
+.glass {
+  background: var(--card-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--card-border);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.light .glass-pill {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light .text-gradient {
+  background: linear-gradient(135deg, #0f172a 0%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* React Bits Glow & Animation Utilities */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shiny-text-sweep {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+.shiny-text {
+  color: #94a3b8;
+  background: linear-gradient(
+    120deg,
+    rgba(148, 163, 184, 0.65) 0%,
+    rgba(148, 163, 184, 0.8) 30%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(96, 165, 250, 0.95) 55%,
+    rgba(148, 163, 184, 0.8) 70%,
+    rgba(148, 163, 184, 0.65) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shiny-text-sweep 3.5s linear infinite;
+}
+
+.light .shiny-text {
+  color: #475569;
+  background: linear-gradient(
+    120deg,
+    rgba(71, 85, 105, 0.75) 0%,
+    rgba(71, 85, 105, 0.9) 30%,
+    rgba(15, 23, 42, 1) 50%,
+    rgba(37, 99, 235, 1) 55%,
+    rgba(71, 85, 105, 0.9) 70%,
+    rgba(71, 85, 105, 0.75) 100%
+  );
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shiny-text-sweep 3.5s linear infinite;
+}
+
+@keyframes marquee-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee-right {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 30s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 30s linear infinite;
+}
+
+/* Custom Styled Horizontal Scrollbar for Category Filter Bar */
+.styled-category-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.styled-category-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.styled-category-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #06b6d4, #3b82f6, #a855f7);
+  border-radius: 9999px;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.styled-category-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(90deg, #00f0ff, #3b82f6, #ff007f);
+}
+
+/* Suppress Next.js Dev Badge & Overlay Indicators */
+[data-nextjs-toast],
+nextjs-portal,
+#nextjs-dev-tools,
+div[data-nextjs-dialog-overlay],
+[data-nextjs-toast-errors] {
+  display: none !important;
+}
+
