@@ -12,7 +12,7 @@ import { RippleGrid } from "@/src/components/reactbits/RippleGrid";
 
 function ExperienceComponent() {
   return (
-    <section id="experience" className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="experience" className="relative py-24 sm:py-32 overflow-hidden scroll-mt-20">
       {/* Interactive Ripple Grid Background */}
       <RippleGrid />
 
@@ -49,7 +49,7 @@ function ExperienceComponent() {
 
                 {/* Experience Card */}
                 <div className="ml-12 w-full md:ml-0 md:w-1/2 md:px-6">
-                  <AnimatedBorderGlow glowColor={idx % 2 === 0 ? "rainbow" : "cyber"} containerClassName="h-full">
+                  <AnimatedBorderGlow glowColor="theme" containerClassName="h-full">
                     <SpotlightCard className="h-full border-0">
                     {/* Period & Status */}
                       <div className="flex items-center justify-between gap-2 mb-3">
@@ -59,7 +59,7 @@ function ExperienceComponent() {
                         </span>
                         {exp.status === "Current" && (
                           <AnimatedBorderGlow
-                            glowColor="emerald"
+                            glowColor="theme"
                             containerClassName="rounded-full p-[1.5px] shadow-sm shadow-emerald-500/20"
                             className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-[10px] font-bold text-emerald-400 flex items-center justify-center gap-1.5"
                           >

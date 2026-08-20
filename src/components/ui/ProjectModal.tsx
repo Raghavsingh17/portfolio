@@ -119,7 +119,7 @@ function ProjectModalComponent({ project, onClose }: ProjectModalProps) {
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
-              glowColor="cyber"
+              glowColor="theme"
               size="sm"
               innerClassName="px-6 py-3 text-sm font-semibold gap-2"
             >
@@ -132,7 +132,7 @@ function ProjectModalComponent({ project, onClose }: ProjectModalProps) {
               href={project.githubUrl}
               target="_blank"
               rel="noopener noreferrer"
-              glowColor="rainbow"
+              glowColor="theme"
               size="sm"
               innerClassName="px-6 py-3 text-sm font-semibold gap-2"
             >

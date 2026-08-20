@@ -15,12 +15,15 @@ import { ProjectModal } from "@/src/components/ui/ProjectModal";
 import { useCursor } from "@/src/context/CursorContext";
 import { CursorGrid } from "@/src/components/reactbits/CursorGrid";
 
+import { useTheme } from "@/src/context/ThemeContext";
+
 const CATEGORIES = ["All", "Full Stack", "AI & ML", "Web App", "Developer Tools"];
 
 function ProjectsComponent() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const { setCursorMode } = useCursor();
+  const { currentPreset } = useTheme();
 
   const filteredProjects = useMemo(
     () =>
@@ -31,7 +34,7 @@ function ProjectsComponent() {
   );
 
   return (
-    <section id="projects" className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="projects" className="relative py-24 sm:py-32 overflow-hidden scroll-mt-20">
       {/* Interactive Cursor Grid Background */}
       <CursorGrid />
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -51,7 +54,7 @@ function ProjectsComponent() {
         {/* Category Tabs */}
         <div className="mt-12 flex justify-center">
           <AnimatedBorderGlow
-            glowColor="rainbow"
+            glowColor="theme"
             containerClassName="rounded-2xl p-[1.5px] max-w-full"
             className="p-1.5 rounded-[calc(1rem-1.5px)] bg-slate-950/80 backdrop-blur-xl flex flex-wrap justify-center gap-2"
           >
@@ -66,9 +69,10 @@ function ProjectsComponent() {
                 >
                   {isActive ? (
                     <AnimatedBorderGlow
-                      glowColor="cyber"
+                      glowColor="theme"
                       containerClassName="rounded-xl p-[1.5px]"
-                      className="px-4 py-2 rounded-[calc(0.75rem-1.5px)] bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 text-white font-bold text-xs shadow-lg shadow-blue-500/30"
+                      style={{ background: `linear-gradient(135deg, ${currentPreset.colors.accent}, ${currentPreset.colors.primary})` }}
+                      className="px-4 py-2 rounded-[calc(0.75rem-1.5px)] text-white font-bold text-xs shadow-lg"
                     >
                       <span className="whitespace-nowrap">{category}</span>
                     </AnimatedBorderGlow>
@@ -86,7 +90,7 @@ function ProjectsComponent() {
         {/* Projects Grid */}
         <motion.div layout className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           <AnimatePresence>
-            {filteredProjects.map((project: Project, idx: number) => (
+            {filteredProjects.map((project: Project) => (
               <motion.div
                 key={project.id}
                 layout
@@ -95,7 +99,7 @@ function ProjectsComponent() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.4 }}
               >
-                <AnimatedBorderGlow glowColor={idx % 3 === 0 ? "rainbow" : idx % 3 === 1 ? "cyber" : "sunset"} containerClassName="h-full">
+                <AnimatedBorderGlow glowColor="theme" containerClassName="h-full">
                   <TiltCard className="h-full border-0">
                     <SpotlightCard className="h-full flex flex-col justify-between p-0 overflow-hidden border-0">
                       {/* Project Image Banner */}

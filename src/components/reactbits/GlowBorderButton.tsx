@@ -13,7 +13,7 @@ interface GlowBorderButtonProps {
   download?: string;
   target?: string;
   rel?: string;
-  onClick?: () => void;
+  onClick?: (e?: any) => void;
   className?: string;
   innerClassName?: string;
   glowColor?:
@@ -74,9 +74,10 @@ export function GlowBorderButton({
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  const conicBg = glowColor
-    ? conicGradients[glowColor] || glowColor
-    : currentPreset.colors.conicGradient || conicGradients.cyan;
+  const conicBg =
+    glowColor && glowColor !== "theme"
+      ? conicGradients[glowColor] || glowColor
+      : currentPreset.colors.conicGradient || conicGradients.cyan;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!magnetic || !ref.current) return;
@@ -153,7 +154,7 @@ export function GlowBorderButton({
         target={target}
         rel={rel}
         onClick={onClick}
-        className="inline-block"
+        className={cn("inline-block", className)}
       >
         {content}
       </a>

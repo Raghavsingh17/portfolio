@@ -1,102 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { ThemeId, ThemePreset } from "@/src/types/theme";
+import { THEME_PRESETS } from "@/src/utils/themePresets";
 
-export type ThemeId = "dark" | "tokyo-night" | "cyberpunk" | "dracula";
-
-export interface ThemePreset {
-  id: ThemeId;
-  name: string;
-  description: string;
-  badgeBg: string;
-  badgeDots: [string, string];
-  colors: {
-    background: string;
-    foreground: string;
-    cardBg: string;
-    cardBorder: string;
-    primary: string;
-    primaryGlow: string;
-    accent: string;
-    conicGradient: string;
-    beamHue: number;
-  };
-}
-
-export const THEME_PRESETS: ThemePreset[] = [
-  {
-    id: "dark",
-    name: "Modern Dark",
-    description: "Deep Slate & Cyan/Indigo Glow",
-    badgeBg: "#0f172a",
-    badgeDots: ["#06b6d4", "#3b82f6"],
-    colors: {
-      background: "#090a0f",
-      foreground: "#f8fafc",
-      cardBg: "rgba(15, 23, 42, 0.7)",
-      cardBorder: "rgba(255, 255, 255, 0.1)",
-      primary: "#3b82f6",
-      primaryGlow: "rgba(59, 130, 246, 0.35)",
-      accent: "#06b6d4",
-      conicGradient: "conic-gradient(from 0deg, transparent 0%, transparent 75%, #06b6d4 90%, #3b82f6 100%)",
-      beamHue: 215,
-    },
-  },
-  {
-    id: "tokyo-night",
-    name: "Tokyo Night",
-    description: "Deep Purple-Navy & Soft Pink Accent",
-    badgeBg: "#1a1b26",
-    badgeDots: ["#f7768e", "#bb9af7"],
-    colors: {
-      background: "#1a1b26",
-      foreground: "#c0caf5",
-      cardBg: "rgba(36, 40, 59, 0.75)",
-      cardBorder: "rgba(187, 154, 247, 0.15)",
-      primary: "#bb9af7",
-      primaryGlow: "rgba(187, 154, 247, 0.35)",
-      accent: "#f7768e",
-      conicGradient: "conic-gradient(from 0deg, transparent 0%, transparent 75%, #f7768e 90%, #bb9af7 100%)",
-      beamHue: 270,
-    },
-  },
-  {
-    id: "cyberpunk",
-    name: "Cyberpunk Synth",
-    description: "Pitch Black & Neon Cyan/Pink",
-    badgeBg: "#0d0e15",
-    badgeDots: ["#ff007f", "#00f0ff"],
-    colors: {
-      background: "#0d0e15",
-      foreground: "#f3f4f6",
-      cardBg: "rgba(22, 24, 38, 0.85)",
-      cardBorder: "rgba(0, 240, 255, 0.2)",
-      primary: "#00f0ff",
-      primaryGlow: "rgba(0, 240, 255, 0.4)",
-      accent: "#ff007f",
-      conicGradient: "conic-gradient(from 0deg, transparent 0%, transparent 75%, #ff007f 90%, #00f0ff 100%)",
-      beamHue: 190,
-    },
-  },
-  {
-    id: "dracula",
-    name: "Dracula Theme",
-    description: "Charcoal Dark & Purple/Green Glow",
-    badgeBg: "#282a36",
-    badgeDots: ["#50fa7b", "#bd93f9"],
-    colors: {
-      background: "#282a36",
-      foreground: "#f8f8f2",
-      cardBg: "rgba(68, 71, 90, 0.7)",
-      cardBorder: "rgba(189, 147, 249, 0.2)",
-      primary: "#bd93f9",
-      primaryGlow: "rgba(189, 147, 249, 0.35)",
-      accent: "#50fa7b",
-      conicGradient: "conic-gradient(from 0deg, transparent 0%, transparent 75%, #50fa7b 90%, #bd93f9 100%)",
-      beamHue: 265,
-    },
-  },
-];
+export type { ThemeId, ThemePreset };
+export { THEME_PRESETS };
 
 interface ThemeContextType {
   theme: ThemeId;

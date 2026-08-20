@@ -1,79 +1,23 @@
 "use client";
 
 import { memo } from "react";
-import {
-  Briefcase,
-  FileText,
-  Smartphone,
-  Palette,
-  Code,
-  ArrowUpRight,
-} from "lucide-react";
+import { ArrowUpRight, Code } from "lucide-react";
 import { PERSONAL_INFO } from "@/src/data/portfolio";
 import { ScrollReveal } from "@/src/components/reactbits/ScrollReveal";
 import { SpotlightCard } from "@/src/components/reactbits/SpotlightCard";
 import { ShinyText } from "@/src/components/reactbits/ShinyText";
 import { AnimatedBorderGlow } from "@/src/components/reactbits/AnimatedBorderGlow";
+import { getAboutHighlights } from "@/src/utils/aboutHelpers";
 
 interface AboutProps {
   onOpenResume?: () => void;
 }
 
 function AboutComponent({ onOpenResume }: AboutProps) {
-  const HIGHLIGHTS = [
-    {
-      id: "experience",
-      icon: Briefcase,
-      title: "2 + Years Experience",
-      badge: "Career Metric",
-      description:
-        "Developing production-grade frontend systems, scalable full-stack APIs, reusable component libraries, and real-time interactive web applications.",
-      glowColor: "cyber" as const,
-      iconGlowColor: "cyan-blue" as const,
-      iconColor: "text-cyan-400",
-      isInteractive: false,
-    },
-    {
-      id: "resume-hub",
-      icon: FileText,
-      title: "Interactive Resume",
-      badge: "Live PDF Hub",
-      description:
-        "Explore full work history, tech stack breakdown, education, and certifications with live PDF preview or instant download.",
-      glowColor: "rainbow" as const,
-      iconGlowColor: "rainbow" as const,
-      iconColor: "text-blue-400",
-      isInteractive: true,
-      onClick: onOpenResume,
-    },
-    {
-      id: "responsive",
-      icon: Smartphone,
-      title: "Responsive & Scalable",
-      badge: "Cross-Device",
-      description:
-        "Flawless mobile-first layouts with zero horizontal overflow, fluid typography, and sub-100ms Core Web Vitals performance.",
-      glowColor: "sunset" as const,
-      iconGlowColor: "sunset" as const,
-      iconColor: "text-amber-400",
-      isInteractive: false,
-    },
-    {
-      id: "uiux",
-      icon: Palette,
-      title: "UI/UX & Micro-Interactions",
-      badge: "Design Craft",
-      description:
-        "Crafting Apple and Vercel-inspired glassmorphism interfaces, smooth Framer Motion spring physics, and accessible components.",
-      glowColor: "gold" as const,
-      iconGlowColor: "purple" as const,
-      iconColor: "text-purple-400",
-      isInteractive: false,
-    },
-  ];
+  const HIGHLIGHTS = getAboutHighlights(onOpenResume);
 
   return (
-    <section id="about" className="relative py-24 sm:py-32 overflow-hidden">
+    <section id="about" className="relative py-24 sm:py-32 overflow-hidden scroll-mt-20">
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <ScrollReveal className="text-center">
@@ -91,7 +35,7 @@ function AboutComponent({ onOpenResume }: AboutProps) {
         {/* Story Section Card */}
         <div className="mt-16 max-w-4xl mx-auto">
           <ScrollReveal direction="up">
-            <AnimatedBorderGlow glowColor="rainbow">
+            <AnimatedBorderGlow glowColor="theme">
               <SpotlightCard className="h-full flex flex-col justify-between border-0 p-8 sm:p-10">
                 <div>
                   <div className="flex items-center gap-2 text-blue-400 font-mono text-xs uppercase tracking-widest mb-4">
@@ -131,8 +75,8 @@ function AboutComponent({ onOpenResume }: AboutProps) {
           {HIGHLIGHTS.map((item, idx) => {
             const Icon = item.icon;
             return (
-              <ScrollReveal key={item.id} delay={idx * 0.1}>
-                <AnimatedBorderGlow glowColor={item.glowColor}>
+              <ScrollReveal key={item.id} delay={idx * 0.1} className="h-full">
+                <AnimatedBorderGlow glowColor={item.glowColor} containerClassName="h-full">
                   <SpotlightCard
                     onClick={item.onClick}
                     className={`h-full border-0 flex flex-col justify-between ${item.isInteractive ? "cursor-pointer group/resumeCard" : ""

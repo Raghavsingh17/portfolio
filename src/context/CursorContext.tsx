@@ -1,16 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
+import { CursorMode, CursorContextType } from "@/src/types/cursor";
 
-export type CursorMode = "default" | "pointer" | "magnetic" | "text" | "hidden";
-
-interface CursorContextType {
-  cursorMode: CursorMode;
-  cursorText: string | null;
-  cursorEnabled: boolean;
-  setCursorMode: (mode: CursorMode, text?: string | null) => void;
-  toggleCursor: () => void;
-}
+export type { CursorMode, CursorContextType };
 
 const CursorContext = createContext<CursorContextType | undefined>(undefined);
 

@@ -40,14 +40,13 @@ export function ThemeToggle() {
         
         {/* Color Badge Indicator */}
         <span className="flex items-center gap-1">
-          <span
-            className="h-2.5 w-2.5 rounded-full border border-white/20"
-            style={{ backgroundColor: currentPreset.badgeDots[0] }}
-          />
-          <span
-            className="h-2.5 w-2.5 rounded-full border border-white/20"
-            style={{ backgroundColor: currentPreset.badgeDots[1] }}
-          />
+          {currentPreset.badgeDots.map((color, idx) => (
+            <span
+              key={idx}
+              className="h-2.5 w-2.5 rounded-full border border-white/20"
+              style={{ backgroundColor: color }}
+            />
+          ))}
         </span>
       </button>
 
