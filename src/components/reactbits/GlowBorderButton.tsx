@@ -110,7 +110,7 @@ export function GlowBorderButton({
       animate={{ x: position.x, y: position.y }}
       transition={{ type: "spring", stiffness: 250, damping: 15, mass: 0.1 }}
       className={cn(
-        "group relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden transition-all duration-300 active:scale-95 hover:scale-[1.02]",
+        "group relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden transition-all duration-300 active:scale-95 hover:scale-[1.02] isolation-isolate transform-gpu",
         className
       )}
     >
@@ -118,7 +118,7 @@ export function GlowBorderButton({
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[350%] w-[350%] opacity-90 transition-opacity duration-300 group-hover:opacity-100 will-change-transform"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[350%] w-[350%] aspect-square opacity-90 transition-opacity duration-300 group-hover:opacity-100 transform-gpu will-change-transform"
         style={{
           x: "-50%",
           y: "-50%",
@@ -128,7 +128,7 @@ export function GlowBorderButton({
 
       {/* Ambient Glow Aura */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-full opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-50"
+        className="pointer-events-none absolute inset-0 rounded-full opacity-0 blur-lg transition-opacity duration-300 [@media(hover:hover)]:group-hover:opacity-50"
         style={{ background: currentPreset.colors.primaryGlow }}
       />
 

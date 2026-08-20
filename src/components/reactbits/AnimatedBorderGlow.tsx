@@ -57,6 +57,8 @@ function AnimatedBorderGlowComponent({
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!interactive || !containerRef.current) return;
+    if (typeof window !== "undefined" && window.matchMedia && !window.matchMedia("(hover: hover)").matches) return;
+
     const rect = containerRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -66,6 +68,12 @@ function AnimatedBorderGlowComponent({
       setPosition({ x, y });
       animFrameRef.current = null;
     });
+  };
+
+  const handleMouseEnter = () => {
+    if (!interactive) return;
+    if (typeof window !== "undefined" && window.matchMedia && !window.matchMedia("(hover: hover)").matches) return;
+    setOpacity(1);
   };
 
   const handleMouseLeave = () => {
@@ -85,10 +93,10 @@ function AnimatedBorderGlowComponent({
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setOpacity(1)}
+      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "group/borderGlow relative overflow-hidden rounded-3xl p-[1.5px] transition-all duration-300 shadow-xl",
+        "group/borderGlow relative overflow-hidden rounded-3xl p-[1.5px] transition-all duration-300 shadow-xl isolation-isolate transform-gpu",
         containerClassName
       )}
     >
@@ -96,7 +104,7 @@ function AnimatedBorderGlowComponent({
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[350%] w-[350%] opacity-100 transition-opacity duration-300 will-change-transform"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[350%] w-[350%] aspect-square opacity-100 transition-opacity duration-300 transform-gpu will-change-transform"
         style={{
           x: "-50%",
           y: "-50%",
@@ -104,10 +112,10 @@ function AnimatedBorderGlowComponent({
         }}
       />
 
-      {/* Interactive Cursor Glare */}
+      {/* Interactive Cursor Glare (Mouse-only) */}
       {interactive && (
         <div
-          className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 group-hover/borderGlow:opacity-100"
+          className="pointer-events-none absolute -inset-px opacity-0 transition-opacity duration-300 [@media(hover:hover)]:group-hover/borderGlow:opacity-100"
           style={{
             opacity,
             background: `radial-gradient(350px circle at ${position.x}px ${position.y}px, ${currentPreset.colors.primaryGlow}, transparent 60%)`,
