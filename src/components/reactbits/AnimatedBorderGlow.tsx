@@ -9,6 +9,7 @@ interface AnimatedBorderGlowProps {
   children: React.ReactNode;
   className?: string;
   containerClassName?: string;
+  style?: React.CSSProperties;
   glowColor?:
     | "blue"
     | "indigo"
@@ -29,7 +30,8 @@ function AnimatedBorderGlowComponent({
   children,
   className,
   containerClassName,
-  glowColor = "rainbow",
+  style,
+  glowColor = "theme",
   duration = 3.5,
   interactive = true,
 }: AnimatedBorderGlowProps) {
@@ -74,7 +76,10 @@ function AnimatedBorderGlowComponent({
     setOpacity(0);
   };
 
-  const bgStyle = conicGradients[glowColor] || glowColor || currentPreset.colors.conicGradient;
+  const bgStyle =
+    glowColor && glowColor !== "theme"
+      ? conicGradients[glowColor] || glowColor
+      : currentPreset.colors.conicGradient;
 
   return (
     <div
@@ -112,6 +117,7 @@ function AnimatedBorderGlowComponent({
 
       {/* Inner Content Box */}
       <div
+        style={style}
         className={cn(
           "relative z-10 h-full w-full rounded-[calc(1.5rem-1.5px)] border border-slate-800/80 bg-slate-950/95 p-6 transition-all duration-300 text-white subpixel-antialiased",
           className

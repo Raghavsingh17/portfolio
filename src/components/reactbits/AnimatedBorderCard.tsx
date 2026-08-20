@@ -76,7 +76,10 @@ function AnimatedBorderCardComponent({
         style={{
           x: "-50%",
           y: "-50%",
-          background: conicGradients[glowColor] || currentPreset.colors.conicGradient,
+          background:
+            glowColor && glowColor !== "theme" && conicGradients[glowColor as keyof typeof conicGradients]
+              ? conicGradients[glowColor as keyof typeof conicGradients]
+              : currentPreset.colors.conicGradient,
         }}
       />
 

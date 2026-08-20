@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useTheme } from "@/src/context/ThemeContext";
+import { useTheme, ThemeId } from "@/src/context/ThemeContext";
 import { LightfallBackground } from "./LightfallBackground";
 import { ParticlesBackground } from "./ParticlesBackground";
 
@@ -13,7 +13,7 @@ export function HeroAboutBackground({ className = "" }: HeroAboutBackgroundProps
   const { theme } = useTheme();
 
   // Dynamic Orb Color Presets per theme
-  const orbColors = {
+  const orbColorsMap: Record<ThemeId, string[]> = {
     dark: [
       "rgba(6, 182, 212, 0.22)",  // Neon Cyan
       "rgba(139, 92, 246, 0.22)", // Vivid Violet
@@ -38,12 +38,33 @@ export function HeroAboutBackground({ className = "" }: HeroAboutBackgroundProps
       "rgba(255, 121, 198, 0.2)",  // Pink
       "rgba(139, 92, 246, 0.18)",  // Violet
     ],
-  }[theme] || [
-    "rgba(6, 182, 212, 0.22)",
-    "rgba(139, 92, 246, 0.22)",
-    "rgba(59, 130, 246, 0.22)",
-    "rgba(236, 72, 153, 0.18)",
-  ];
+    "nord-ice": [
+      "rgba(136, 192, 208, 0.22)", // Frost Cyan
+      "rgba(129, 161, 193, 0.22)", // Polar Blue
+      "rgba(94, 129, 172, 0.22)",  // Deep Ice
+      "rgba(143, 188, 187, 0.18)", // Mint Cyan
+    ],
+    "emerald-matrix": [
+      "rgba(16, 185, 129, 0.24)",  // Emerald Green
+      "rgba(52, 211, 153, 0.24)",  // Mint Accent
+      "rgba(5, 150, 105, 0.22)",   // Deep Jade
+      "rgba(16, 185, 129, 0.18)",  // Soft Emerald
+    ],
+    catppuccin: [
+      "rgba(203, 166, 247, 0.22)", // Mauve
+      "rgba(245, 224, 220, 0.2)",  // Rosewater
+      "rgba(243, 139, 168, 0.2)",  // Red/Pink
+      "rgba(180, 190, 254, 0.18)", // Lavender
+    ],
+    "sunset-horizon": [
+      "rgba(245, 158, 11, 0.24)",  // Amber Gold
+      "rgba(244, 63, 94, 0.22)",   // Sunset Rose
+      "rgba(236, 72, 153, 0.2)",   // Pink
+      "rgba(249, 115, 22, 0.18)",  // Orange
+    ],
+  };
+
+  const orbColors = orbColorsMap[theme] || orbColorsMap.dark;
 
   return (
     <div className={`pointer-events-none absolute inset-0 z-0 h-full w-full overflow-hidden ${className}`}>

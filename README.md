@@ -1,6 +1,6 @@
 # ⚡ Raghav Singh — Modern Frontend Developer Portfolio
 
-A high-performance, visually rich personal developer portfolio built with **Next.js 16 (App Router)**, **React.js**, **TypeScript**, **Tailwind CSS v4**, **Framer Motion** and **Reactbits**.
+A high-performance, visually rich personal developer portfolio built with **Next.js 16 (App Router)**, **React.js**, **TypeScript**, **Tailwind CSS**, **Framer Motion**, and **Reactbits**.
 
 ![Portfolio Preview](./public/Hero.png)
 
@@ -14,7 +14,7 @@ This portfolio showcases production-grade web applications, interactive canvas m
 
 ## ✨ Features & Highlights
 
-- **🚀 60 FPS High Performance**: Component memoization (`React.memo`), GPU-accelerated canvas particles & dynamic lazy loading (`next/dynamic`).
+- **🚀 60 FPS High Performance**: Component memoization (`React.memo`), GPU-accelerated canvas particles & dynamic lazy loading.
 - **🎨 Theme Preset Switcher**: Live theme switching (**Modern Dark**, **Tokyo Night**, **Cyberpunk**, **Dracula**) with dynamic glowing borders.
 - **🤖 AI Career Assistant**: Embedded AI Chatbot trained on work experience, technical stack, projects & contact info.
 - **💻 Code Playground & Terminal**: Interactive code previewer and mini terminal for exploring technical samples.
@@ -25,14 +25,14 @@ This portfolio showcases production-grade web applications, interactive canvas m
 
 ## 🛠️ Tech Stack Table
 
-| Category       | Technology                                                                |
-| :------------- | :------------------------------------------------------------------------ |
-| **Framework**  | [Next.js 16 (App Router)](https://nextjs.org/) with Turbopack             |
-| **Library**    | [React 19](https://react.dev/)                                            |
-| **Language**   | [TypeScript](https://www.typescriptlang.org/)                             |
-| **Styling**    | [Tailwind CSS v4](https://tailwindcss.com/), Glassmorphism, CSS Variables |
-| **Animations** | [Framer Motion](https://www.framer.com/motion/), HTML5 Canvas 2D API      |
-| **Icons**      | [Lucide React](https://lucide.dev/), Custom Brand SVGs                    |
+| Category       | Technology                                                             |
+| :------------- | :--------------------------------------------------------------------- |
+| **Framework**  | [Next.js 16 (App Router)](https://nextjs.org/) with Turbopack          |
+| **Library**    | [React 19](https://react.dev/)                                         |
+| **Language**   | [TypeScript](https://www.typescriptlang.org/)                          |
+| **Styling**    | [Tailwind CSS](https://tailwindcss.com/), Glassmorphism, CSS Variables |
+| **Animations** | [Framer Motion](https://www.framer.com/motion/), HTML5 Canvas 2D API   |
+| **Icons**      | [Lucide React](https://lucide.dev/), Custom Brand SVGs                 |
 
 ---
 
@@ -56,10 +56,3 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to view the site.
-
-### 4. Build for Production
-
-```bash
-npm run build
-npm run start
-```

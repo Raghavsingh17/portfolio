@@ -43,7 +43,7 @@ function HeroComponent({ onOpenResume }: HeroProps) {
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16"
+      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16 scroll-mt-20"
     >
       <div className="relative z-10 mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
         {/* Availability Badge */}
@@ -63,7 +63,7 @@ function HeroComponent({ onOpenResume }: HeroProps) {
         </motion.div>
 
         {/* Main Headline - Responsive Mobile & Desktop Fitting with Crisp Text Shadow */}
-        <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight text-white light:text-slate-900 leading-tight sm:leading-none break-words drop-shadow-2xl">
+        <h1 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight text-white light:text-slate-900 leading-tight sm:leading-none break-words drop-shadow-2xl">
           <ShinyText>Raghav Singh <br />  Frontend Developer</ShinyText>
         </h1>
 
@@ -76,19 +76,23 @@ function HeroComponent({ onOpenResume }: HeroProps) {
         </div>
 
         {/* Action Buttons wrapped in MagneticButton */}
-        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 w-full">
+        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-5 w-full">
           <MagneticButton className="w-full sm:w-auto">
             <GlowBorderButton
               as="a"
               href="#projects"
-              glowColor="rainbow"
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                e.preventDefault();
+                document.getElementById("projects")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              glowColor="theme"
               size="md"
               magnetic={false}
               className="w-full sm:w-auto"
-              innerClassName="w-full sm:w-auto px-8 py-4 text-base sm:text-lg font-bold gap-3"
+              innerClassName="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-xs sm:text-sm lg:text-lg font-bold gap-2.5 sm:gap-3"
             >
               <span>Explore Featured Work</span>
-              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 transition-transform group-hover:translate-x-1" />
             </GlowBorderButton>
           </MagneticButton>
 
@@ -96,13 +100,17 @@ function HeroComponent({ onOpenResume }: HeroProps) {
             <GlowBorderButton
               as="a"
               href="#contact"
-              glowColor="cyber"
+              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                e.preventDefault();
+                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              glowColor="theme"
               size="md"
               magnetic={false}
               className="w-full sm:w-auto"
-              innerClassName="w-full sm:w-auto px-8 py-4 text-base sm:text-lg font-bold gap-3"
+              innerClassName="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-xs sm:text-sm lg:text-lg font-bold gap-2.5 sm:gap-3"
             >
-              <Sparkles className="h-5 w-5 text-blue-400" />
+              <Sparkles className="h-4 w-4 lg:h-5 lg:w-5 text-blue-400" />
               <span>Let's Talk</span>
             </GlowBorderButton>
           </MagneticButton>

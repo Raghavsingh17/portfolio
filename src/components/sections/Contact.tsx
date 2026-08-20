@@ -2,9 +2,9 @@
 
 import React, { useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, MapPin, Send, CheckCircle2, Copy, MessageSquare, } from "lucide-react";
+import { Mail, MapPin, Send, CheckCircle2, Copy, MessageSquare } from "lucide-react";
 import confetti from "canvas-confetti";
-import { Github, Linkedin, Twitter } from "@/src/components/ui/Icons";
+import { Github, Linkedin, Instagram } from "@/src/components/ui/Icons";
 import { PERSONAL_INFO } from "@/src/data/portfolio";
 import { ScrollReveal } from "@/src/components/reactbits/ScrollReveal";
 import { SpotlightCard } from "@/src/components/reactbits/SpotlightCard";
@@ -72,7 +72,7 @@ function ContactComponent() {
   };
 
   return (
-    <section id="contact" className="relative py-12 sm:py-28 pb-28 sm:pb-36 overflow-hidden">
+    <section id="contact" className="relative py-12 sm:py-28 pb-28 sm:pb-36 overflow-hidden scroll-mt-20">
       {/* ReactBits Sparkles Canvas Background */}
       <SparklesBackground
         count={220}
@@ -97,7 +97,7 @@ function ContactComponent() {
         <div className="mt-8 sm:mt-16 grid gap-6 sm:gap-10 lg:grid-cols-12">
           {/* Contact Details & Copy Card */}
           <ScrollReveal direction="left" className="lg:col-span-5 flex flex-col justify-between space-y-6">
-            <AnimatedBorderGlow glowColor="rainbow" containerClassName="h-full" className="p-0">
+            <AnimatedBorderGlow glowColor="theme" containerClassName="h-full" className="p-0">
               <SpotlightCard className="h-full flex flex-col justify-between p-4 sm:p-8 border-0 dark:bg-slate-950/80 light:bg-white/80">
                 <div>
                   <div className="flex items-center gap-2 text-blue-400 font-mono text-xs uppercase tracking-widest mb-4 sm:mb-6">
@@ -144,7 +144,7 @@ function ContactComponent() {
                   {/* Location info */}
                   <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-300 light:text-slate-600 mb-6">
                     <AnimatedBorderGlow
-                      glowColor="emerald"
+                      glowColor="theme"
                       containerClassName="h-10 w-10 shrink-0 rounded-xl p-[1.5px] shadow-lg shadow-emerald-500/20"
                       className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-emerald-400"
                     >
@@ -176,9 +176,9 @@ function ContactComponent() {
                           glowColor: "cyan-blue",
                         },
                         {
-                          name: "Follow on X",
-                          href: PERSONAL_INFO.socials.twitter,
-                          icon: <Twitter className="h-4.5 w-4.5 sm:h-5 sm:w-5" />,
+                          name: "Follow on Instagram",
+                          href: PERSONAL_INFO.socials.instagram,
+                          icon: <Instagram className="h-4.5 w-4.5 sm:h-5 sm:w-5" />,
                           glowColor: "sunset",
                         },
                         {
@@ -228,7 +228,7 @@ function ContactComponent() {
 
           {/* Contact Form Card */}
           <ScrollReveal direction="right" className="lg:col-span-7">
-            <AnimatedBorderGlow glowColor="cyber" containerClassName="h-full" className="p-0">
+            <AnimatedBorderGlow glowColor="theme" containerClassName="h-full" className="p-0">
               <SpotlightCard className="h-full border-0 p-4 sm:p-8 dark:bg-slate-950/95 light:bg-white/95 flex flex-col justify-between">
                 <AnimatePresence mode="wait">
                   {isSubmitted ? (
@@ -339,7 +339,7 @@ function ContactComponent() {
                           disabled={isSubmitting}
                           className="w-full"
                           innerClassName="w-full px-5 py-3 sm:px-8 sm:py-4 text-sm sm:text-base font-bold gap-2"
-                          glowColor="rainbow"
+                          glowColor="theme"
                         >
                           {isSubmitting ? (
                             <span className="flex items-center gap-2">

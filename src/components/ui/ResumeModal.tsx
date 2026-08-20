@@ -21,6 +21,7 @@ import { PERSONAL_INFO, EXPERIENCES, EDUCATION, SOCIAL_LINKS } from "@/src/data/
 import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
 import { AnimatedBorderGlow } from "@/src/components/reactbits/AnimatedBorderGlow";
 import { ParticlesBackground } from "@/src/components/reactbits/ParticlesBackground";
+import { useTheme } from "@/src/context/ThemeContext";
 
 interface ResumeModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ interface ResumeModalProps {
 type TabType = "pdf" | "experience" | "education" | "skills";
 
 function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
+  const { currentPreset } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>("pdf");
   const [showPdf, setShowPdf] = useState(false);
   const resumeBodyRef = useRef<HTMLDivElement>(null);
@@ -95,7 +97,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
             <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-4 p-3 sm:p-5 border-b border-white/10 bg-slate-950/80 shrink-0">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                 <AnimatedBorderGlow
-                  glowColor="cyan-blue"
+                  glowColor="theme"
                   containerClassName="h-9 w-9 sm:h-11 sm:w-11 shrink-0 rounded-xl sm:rounded-2xl p-[1.5px] shadow-lg shadow-cyan-500/20"
                   className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] sm:rounded-[calc(1rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-cyan-400"
                 >
@@ -120,7 +122,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                   download="Raghav_Kumar_Resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  glowColor="rainbow"
+                  glowColor="theme"
                   size="sm"
                   innerClassName="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-bold gap-1 sm:gap-1.5"
                 >
@@ -132,7 +134,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                 <GlowBorderButton
                   onClick={onClose}
                   aria-label="Close resume modal"
-                  glowColor="sunset"
+                  glowColor="theme"
                   size="sm"
                   className="rounded-full shadow-lg"
                   innerClassName="h-8 w-8 sm:h-9 sm:w-9 rounded-full p-0 flex items-center justify-center bg-slate-950/90 text-white hover:scale-110 active:scale-95 transition-all"
@@ -177,9 +179,10 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                     >
                       {isActive ? (
                         <AnimatedBorderGlow
-                          glowColor="cyber"
+                          glowColor="theme"
                           containerClassName="rounded-xl p-[1.5px]"
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-[calc(0.75rem-1.5px)] bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center gap-1.5 sm:gap-2 whitespace-nowrap justify-center"
+                          style={{ background: `linear-gradient(135deg, ${currentPreset.colors.accent}, ${currentPreset.colors.primary})` }}
+                          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-[calc(0.75rem-1.5px)] text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center gap-1.5 sm:gap-2 whitespace-nowrap justify-center"
                         >
                           {tab.icon}
                           <span className="whitespace-nowrap">{tab.label}</span>
@@ -240,7 +243,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                   /* Minimalist Overview Card with 3 Action Buttons - Zero Scrollbar */
                   <div className="w-full flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-slate-950/60 p-5 sm:p-7 text-center">
                     <AnimatedBorderGlow
-                      glowColor="cyber"
+                      glowColor="theme"
                       containerClassName="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl p-[1.5px] mb-3 shadow-xl shadow-cyan-500/20"
                       className="p-0 h-full w-full rounded-[calc(1rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-cyan-400"
                     >
@@ -262,7 +265,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                         download="Raghav_Kumar_Resume.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
-                        glowColor="rainbow"
+                        glowColor="theme"
                         size="md"
                         innerClassName="px-5 py-2.5 text-xs sm:text-sm font-bold gap-2"
                       >
@@ -273,7 +276,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                       {/* Button 2: Interactive Live PDF View Toggle */}
                       <GlowBorderButton
                         onClick={() => setShowPdf(true)}
-                        glowColor="cyber"
+                        glowColor="theme"
                         size="md"
                         innerClassName="px-5 py-2.5 text-xs sm:text-sm font-bold gap-2 text-white"
                       >
@@ -287,7 +290,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                         href={SOCIAL_LINKS.linkedin || PERSONAL_INFO.socials.linkedin}
                         target="_blank"
                         rel="noopener noreferrer"
-                        glowColor="gold"
+                        glowColor="theme"
                         size="md"
                         innerClassName="px-5 py-2.5 text-xs sm:text-sm font-bold gap-2"
                       >
@@ -349,7 +352,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                   <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 sm:p-5 backdrop-blur-xl">
                     <div className="flex items-center gap-3 mb-3">
                       <AnimatedBorderGlow
-                        glowColor="blue"
+                        glowColor="theme"
                         containerClassName="h-9 w-9 shrink-0 rounded-xl p-[1.5px]"
                         className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-blue-400"
                       >
@@ -368,7 +371,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                   <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 sm:p-5 backdrop-blur-xl">
                     <div className="flex items-center gap-3 mb-3">
                       <AnimatedBorderGlow
-                        glowColor="purple"
+                        glowColor="theme"
                         containerClassName="h-9 w-9 shrink-0 rounded-xl p-[1.5px]"
                         className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-purple-400"
                       >
@@ -454,7 +457,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
               <span className="font-mono text-[11px] sm:text-xs">Document: Official PDF Version</span>
               <GlowBorderButton
                 onClick={onClose}
-                glowColor="sunset"
+                glowColor="theme"
                 size="sm"
                 innerClassName="px-4 py-1.5 text-xs font-bold gap-1.5"
               >

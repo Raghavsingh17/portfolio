@@ -84,7 +84,7 @@ function FooterComponent() {
             <MagneticButton>
               <GlowBorderButton
                 onClick={scrollToTop}
-                glowColor="rainbow"
+                glowColor="theme"
                 size="sm"
                 innerClassName="px-5 py-2 text-xs font-semibold gap-2"
               >
