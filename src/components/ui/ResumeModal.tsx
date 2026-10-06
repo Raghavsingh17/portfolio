@@ -19,9 +19,7 @@ import {
 } from "lucide-react";
 import { PERSONAL_INFO, EXPERIENCES, EDUCATION, SOCIAL_LINKS } from "@/src/data/portfolio";
 import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
-import { AnimatedBorderGlow } from "@/src/components/reactbits/AnimatedBorderGlow";
-import { ParticlesBackground } from "@/src/components/reactbits/ParticlesBackground";
-import { useTheme } from "@/src/context/ThemeContext";
+import { ParticlesBackground } from "@/src/components/backgrounds/ParticlesBackground";
 
 interface ResumeModalProps {
   isOpen: boolean;
@@ -31,7 +29,6 @@ interface ResumeModalProps {
 type TabType = "pdf" | "experience" | "education" | "skills";
 
 function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
-  const { currentPreset } = useTheme();
   const [activeTab, setActiveTab] = useState<TabType>("pdf");
   const [showPdf, setShowPdf] = useState(false);
   const resumeBodyRef = useRef<HTMLDivElement>(null);
@@ -43,11 +40,6 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
     }
   }, [activeTab]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setShowPdf(false);
-    }
-  }, [isOpen]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -96,13 +88,9 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
             {/* Modal Header */}
             <div className="relative z-10 flex items-center justify-between gap-2 sm:gap-4 p-3 sm:p-5 border-b border-white/10 bg-slate-950/80 shrink-0">
               <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                <AnimatedBorderGlow
-                  glowColor="theme"
-                  containerClassName="h-9 w-9 sm:h-11 sm:w-11 shrink-0 rounded-xl sm:rounded-2xl p-[1.5px] shadow-lg shadow-cyan-500/20"
-                  className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] sm:rounded-[calc(1rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-cyan-400"
-                >
+                <div className="h-9 w-9 sm:h-11 sm:w-11 shrink-0 rounded-xl sm:rounded-2xl border border-white/10 bg-slate-950/90 flex items-center justify-center text-cyan-400 shadow-lg shadow-cyan-500/20">
                   <FileText className="h-4 w-4 sm:h-5 sm:w-5" />
-                </AnimatedBorderGlow>
+                </div>
                 <div className="min-w-0">
                   <h2 className="text-sm sm:text-xl font-bold flex items-center gap-1.5 sm:gap-2 truncate">
                     <span className="truncate">{PERSONAL_INFO.name}</span>
@@ -178,15 +166,13 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                       className="relative group shrink-0 transition-all duration-300 focus:outline-none flex items-center"
                     >
                       {isActive ? (
-                        <AnimatedBorderGlow
-                          glowColor="theme"
-                          containerClassName="rounded-xl p-[1.5px]"
-                          style={{ background: `linear-gradient(135deg, ${currentPreset.colors.accent}, ${currentPreset.colors.primary})` }}
-                          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-[calc(0.75rem-1.5px)] text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center gap-1.5 sm:gap-2 whitespace-nowrap justify-center"
+                        <div
+                          style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)" }}
+                          className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center gap-1.5 sm:gap-2 whitespace-nowrap justify-center"
                         >
                           {tab.icon}
                           <span className="whitespace-nowrap">{tab.label}</span>
-                        </AnimatedBorderGlow>
+                        </div>
                       ) : (
                         <div className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-slate-400 hover:text-white hover:bg-white/5 transition-all whitespace-nowrap justify-center">
                           {tab.icon}
@@ -242,13 +228,9 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                 ) : (
                   /* Minimalist Overview Card with 3 Action Buttons - Zero Scrollbar */
                   <div className="w-full flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-slate-950/60 p-5 sm:p-7 text-center">
-                    <AnimatedBorderGlow
-                      glowColor="theme"
-                      containerClassName="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl p-[1.5px] mb-3 shadow-xl shadow-cyan-500/20"
-                      className="p-0 h-full w-full rounded-[calc(1rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-cyan-400"
-                    >
+                    <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl border border-white/10 bg-slate-950/90 flex items-center justify-center text-cyan-400 mb-3 shadow-xl shadow-cyan-500/20">
                       <FileText className="h-6 w-6 sm:h-7 sm:w-7 text-cyan-400" />
-                    </AnimatedBorderGlow>
+                    </div>
 
                     <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
                       {PERSONAL_INFO.name} — Resume Document
@@ -351,13 +333,9 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                 <div className="max-w-3xl mx-auto space-y-4">
                   <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 sm:p-5 backdrop-blur-xl">
                     <div className="flex items-center gap-3 mb-3">
-                      <AnimatedBorderGlow
-                        glowColor="theme"
-                        containerClassName="h-9 w-9 shrink-0 rounded-xl p-[1.5px]"
-                        className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-blue-400"
-                      >
+                      <div className="h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-slate-950/90 flex items-center justify-center text-blue-400">
                         <GraduationCap className="h-4.5 w-4.5" />
-                      </AnimatedBorderGlow>
+                      </div>
                       <div>
                         <h3 className="text-base sm:text-lg font-bold text-white">{EDUCATION.degree}</h3>
                         <p className="text-xs text-slate-400">{EDUCATION.institution} • {EDUCATION.location}</p>
@@ -370,13 +348,9 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
 
                   <div className="rounded-2xl border border-white/10 bg-slate-950/60 p-4 sm:p-5 backdrop-blur-xl">
                     <div className="flex items-center gap-3 mb-3">
-                      <AnimatedBorderGlow
-                        glowColor="theme"
-                        containerClassName="h-9 w-9 shrink-0 rounded-xl p-[1.5px]"
-                        className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-purple-400"
-                      >
+                      <div className="h-9 w-9 shrink-0 rounded-xl border border-white/10 bg-slate-950/90 flex items-center justify-center text-purple-400">
                         <Award className="h-4.5 w-4.5" />
-                      </AnimatedBorderGlow>
+                      </div>
                       <div>
                         <h3 className="text-base sm:text-lg font-bold text-white">Certifications & Specialized Expertise</h3>
                         <p className="text-xs text-slate-400">Verified Industry Credentials</p>

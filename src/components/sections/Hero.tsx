@@ -1,136 +1,155 @@
 "use client";
 
 import { memo } from "react";
-import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight, Sparkles, VolumeX } from "lucide-react";
 import { PERSONAL_INFO } from "@/src/data/portfolio";
-import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
-import { DecryptText } from "@/src/components/reactbits/DecryptText";
-import { ShinyText } from "@/src/components/reactbits/ShinyText";
-import { BlurText } from "@/src/components/reactbits/BlurText";
-import { MagneticButton } from "@/src/components/reactbits/MagneticButton";
-import { InfiniteMarquee } from "@/src/components/reactbits/InfiniteMarquee";
-import {
-  ReactLogo,
-  NextjsLogo,
-  TypeScriptLogo,
-  JavaScriptLogo,
-  TailwindLogo,
-  NodejsLogo,
-  ExpressjsLogo,
-  GraphQLLogo,
-  ReactBitsLogo,
-} from "@/src/components/ui/TechIcons";
-
-// Tech Stack Marquee items for Hero section
-const MARQUEE_SKILLS = [
-  { name: "React 19", icon: <ReactLogo className="h-4 w-4" /> },
-  { name: "Next.js 15", icon: <NextjsLogo className="h-4 w-4 text-white light:text-slate-900" /> },
-  { name: "TypeScript", icon: <TypeScriptLogo className="h-4 w-4" /> },
-  { name: "JavaScript", icon: <JavaScriptLogo className="h-4 w-4" /> },
-  { name: "Tailwind CSS", icon: <TailwindLogo className="h-4 w-4" /> },
-  { name: "Node.js", icon: <NodejsLogo className="h-4 w-4" /> },
-  { name: "Express.js", icon: <ExpressjsLogo className="h-4 w-4" /> },
-  { name: "GraphQL", icon: <GraphQLLogo className="h-4 w-4" /> },
-  { name: "React Bits", icon: <ReactBitsLogo className="h-4 w-4" /> },
-];
-
+import { useCosmic } from "@/src/context/CosmicContext";
 interface HeroProps {
   onOpenResume?: () => void;
 }
 
 function HeroComponent({ onOpenResume }: HeroProps) {
+  void onOpenResume;
+  const { isMuted, toggleSound } = useCosmic();
+
+  // Scroll parallax for luxury creative agency feel
+  const { scrollY } = useScroll();
+  const contentY = useTransform(scrollY, [0, 500], [0, -60]);
+  const contentOpacity = useTransform(scrollY, [0, 420], [1, 0.05]);
+  const indicatorsOpacity = useTransform(scrollY, [0, 220], [1, 0]);
+
+  const handleScrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 60;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+
   return (
     <section
       id="hero"
-      className="relative flex min-h-screen w-full items-center justify-center overflow-hidden pt-24 pb-12 sm:pt-28 sm:pb-16 scroll-mt-20"
+      className="relative flex h-screen min-h-[640px] w-full items-center justify-center overflow-hidden bg-transparent pointer-events-auto"
     >
-      <div className="relative z-10 mx-auto w-full max-w-5xl px-4 text-center sm:px-6 lg:px-8">
-        {/* Availability Badge */}
+      {/* Center Content: Typographic Hero Stack */}
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative z-10 mx-auto flex w-full max-w-5xl flex-col items-center justify-center px-4 text-center sm:px-6 lg:px-8 -mt-[60px] md:-mt-[100px]"
+      >
+        {/* Raghav Singh Heading in Instrument Serif with text-glow */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="mb-4 sm:mb-6 inline-flex max-w-full items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 backdrop-blur-md"
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
         >
-          <span className="relative flex h-2.5 w-2.5 shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
-          </span>
-          <span className="text-[11px] sm:text-xs font-semibold tracking-wide text-blue-300 light:text-blue-600 truncate">
-            <DecryptText text="Available for new frontend & full stack roles" speed={30} />
-          </span>
+          <h1 className="font-instrument text-white text-[42px] sm:text-7xl md:text-8xl lg:text-[104px] leading-[0.92] tracking-tight text-center text-glow select-none">
+            {PERSONAL_INFO.name}
+            <span className="block mt-2 sm:mt-3 text-2xl sm:text-4xl md:text-5xl font-light italic text-white/90 tracking-normal">
+              {PERSONAL_INFO.title}
+            </span>
+          </h1>
         </motion.div>
 
-        {/* Main Headline - Responsive Mobile & Desktop Fitting with Crisp Text Shadow */}
-        <h1 className="text-4xl sm:text-6xl lg:text-7xl xl:text-8xl font-extrabold tracking-tight text-white light:text-slate-900 leading-tight sm:leading-none break-words drop-shadow-2xl">
-          <ShinyText>Raghav Singh <br />  Frontend Developer</ShinyText>
-        </h1>
+        {/* Subtext: Raghav's Tagline */}
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+          className="text-white/75 text-xs sm:text-sm md:text-base text-center mt-5 sm:mt-7 max-w-xl font-inter leading-relaxed select-none mx-auto"
+        >
+          {PERSONAL_INFO.tagline}
+        </motion.p>
 
-        {/* Subtitle / Bio */}
-        <div className="mt-4 sm:mt-6">
-          <BlurText
-            text={PERSONAL_INFO.tagline}
-            className="mx-auto max-w-3xl justify-center text-sm sm:text-lg md:text-xl text-slate-400 light:text-slate-600 leading-relaxed"
+        {/* CTA Buttons: White Glow Pill + Liquid Glass Pill */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.85, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          className="mt-7 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4 w-full sm:w-auto"
+        >
+          {/* Primary CTA (White Glow Pill) */}
+          <button
+            suppressHydrationWarning
+            onClick={() => handleScrollTo("projects")}
+            className="w-full sm:w-auto bg-white text-black px-8 py-3.5 rounded-full font-medium text-xs sm:text-sm tracking-wide hover:bg-white/90 active:scale-95 transition-all duration-300 button-glow flex items-center justify-center gap-2 cursor-pointer select-none shadow-xl"
+          >
+            <span>Explore Featured Work</span>
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </button>
+
+          {/* Secondary CTA (Liquid Glass Pill) */}
+          <button
+            suppressHydrationWarning
+            onClick={() => handleScrollTo("contact")}
+            className="w-full sm:w-auto liquid-glass text-white px-8 py-3.5 rounded-full font-medium text-xs sm:text-sm tracking-wide hover:bg-white/10 active:scale-95 transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer select-none"
+          >
+            <Sparkles className="h-4 w-4 text-white/80" />
+            <span>Let&apos;s Talk</span>
+          </button>
+        </motion.div>
+      </motion.div>
+
+      {/* Sound Indicator (bottom-8 left-8) */}
+      <motion.button
+        type="button"
+        style={{ opacity: indicatorsOpacity }}
+        initial={{ opacity: 0, x: -16 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.5 }}
+        onClick={toggleSound}
+        className="absolute bottom-8 left-6 md:left-8 z-20 flex items-center gap-3 cursor-pointer group select-none bg-transparent border-0 p-0 text-left focus:outline-none"
+        title={isMuted ? "Experience with sound" : "Sound active"}
+        aria-label={isMuted ? "Turn sound on" : "Turn sound off"}
+      >
+        <div className={`h-10 w-10 rounded-full border transition-all duration-300 flex items-center justify-center liquid-glass ${
+          isMuted ? "border-white/20 group-hover:border-white/40" : "border-cyan-400/50 shadow-[0_0_15px_rgba(34,211,238,0.25)]"
+        }`}>
+          {isMuted ? (
+            <VolumeX className="h-4 w-4 text-white/50 group-hover:text-white transition-colors" />
+          ) : (
+            <div className="flex items-center gap-0.5">
+              <span className="w-1 h-3 bg-cyan-300 rounded-full animate-pulse" />
+              <span className="w-1 h-4 bg-white rounded-full animate-pulse delay-75" />
+              <span className="w-1 h-2.5 bg-cyan-300 rounded-full animate-pulse delay-150" />
+            </div>
+          )}
+        </div>
+        <div className="text-left text-xs leading-tight hidden xs:block sm:block">
+          <span className="block text-white/80 font-medium">Experience</span>
+          <span className={`block text-[11px] transition-colors ${
+            isMuted ? "text-white/45" : "text-cyan-300 font-medium"
+          }`}>
+            {isMuted ? "with sound" : "sound active"}
+          </span>
+        </div>
+      </motion.button>
+
+      {/* Minimalist Scroll Indicator (Bottom-Center) */}
+      <motion.div
+        style={{ opacity: indicatorsOpacity }}
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: 0.6 }}
+        onClick={() => handleScrollTo("about")}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center justify-center cursor-pointer group select-none"
+        title="Scroll down to About section"
+      >
+        <div className="relative h-9 w-5 rounded-full border-2 border-white/30 group-hover:border-white/70 p-1 flex justify-center transition-colors">
+          <motion.div
+            animate={{
+              y: [0, 10, 0],
+              opacity: [0.4, 1, 0.4],
+            }}
+            transition={{
+              duration: 1.8,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="h-2 w-1 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]"
           />
         </div>
-
-        {/* Action Buttons wrapped in MagneticButton */}
-        <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-5 w-full">
-          <MagneticButton className="w-full sm:w-auto">
-            <GlowBorderButton
-              as="a"
-              href="#projects"
-              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                e.preventDefault();
-                document.getElementById("projects")?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              glowColor="theme"
-              size="md"
-              magnetic={false}
-              className="w-full sm:w-auto"
-              innerClassName="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-xs sm:text-sm lg:text-lg font-bold gap-2.5 sm:gap-3"
-            >
-              <span>Explore Featured Work</span>
-              <ArrowRight className="h-4 w-4 lg:h-5 lg:w-5 transition-transform group-hover:translate-x-1" />
-            </GlowBorderButton>
-          </MagneticButton>
-
-          <MagneticButton className="w-full sm:w-auto">
-            <GlowBorderButton
-              as="a"
-              href="#contact"
-              onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                e.preventDefault();
-                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-              glowColor="theme"
-              size="md"
-              magnetic={false}
-              className="w-full sm:w-auto"
-              innerClassName="w-full sm:w-auto px-5 py-2.5 sm:px-6 sm:py-3 lg:px-8 lg:py-4 text-xs sm:text-sm lg:text-lg font-bold gap-2.5 sm:gap-3"
-            >
-              <Sparkles className="h-4 w-4 lg:h-5 lg:w-5 text-blue-400" />
-              <span>Let's Talk</span>
-            </GlowBorderButton>
-          </MagneticButton>
-        </div>
-
-        {/* Tech Stack Marquee Carousel */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-12 sm:mt-16 w-full max-w-full overflow-hidden"
-        >
-          <div className="text-center mb-3">
-            <span className="text-[10px] sm:text-[11px] font-mono uppercase tracking-widest text-slate-400 light:text-slate-500">
-              Core Tech Stack & Ecosystem
-            </span>
-          </div>
-          <InfiniteMarquee items={MARQUEE_SKILLS} speed="medium" pauseOnHover={true} />
-        </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }

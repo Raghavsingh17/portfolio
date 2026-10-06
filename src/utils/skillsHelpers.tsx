@@ -45,7 +45,7 @@ import {
   GitLogo,
   GitHubLogo,
   JiraLogo,
-} from "@/src/components/ui/TechIcons";
+} from "@/src/components/icons/TechIcons";
 
 // Modal Categories for Full-Page Exploration
 export const MODAL_CATEGORIES = [
@@ -57,8 +57,9 @@ export const MODAL_CATEGORIES = [
   "Dev Tools",
 ];
 
-// Helper to get colorful animated border glow presets for skill icons
-export function getSkillIconGlow(_category: string, _idx: number) {
+export function getSkillIconGlow(category?: string, idx?: number) {
+  void category;
+  void idx;
   return "theme";
 }
 

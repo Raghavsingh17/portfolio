@@ -11,26 +11,191 @@ import {
   ArrowUpRight,
   ChevronRight,
   FileText,
+  User,
+  Mail,
+  MessageSquare,
+  CheckCircle2,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
-import { AnimatedBorderGlow } from "@/src/components/reactbits/AnimatedBorderGlow";
 import { ChatMessage } from "@/src/types/chat";
 import {
   QUICK_PROMPTS,
+  createMessageId,
   getFormattedTime,
   generateLocalResponse,
+  isConnectIntent,
 } from "@/src/utils/chatHelpers";
 
 type Message = ChatMessage;
 
-interface AIChatWidgetProps {
-  onOpenResume?: () => void;
+interface ChatConnectCardProps {
+  onSent?: (name: string, email: string) => void;
 }
 
-export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
+function ChatConnectCard({ onSent }: ChatConnectCardProps) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+    const trimmedMsg = message.trim();
+
+    if (!trimmedName || !trimmedEmail || !trimmedMsg) {
+      setErrorMsg("Please provide your name, email, and a short message.");
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+
+    setErrorMsg("");
+    setIsSubmitting(true);
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      const res = await fetch(`${backendUrl}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: trimmedName,
+          email: trimmedEmail,
+          message: trimmedMsg,
+          source: "chatbot",
+        }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
+        setIsSuccess(true);
+        if (onSent) {
+          onSent(trimmedName, trimmedEmail);
+        }
+      } else {
+        setErrorMsg(data.error || "Failed to deliver. Please try again.");
+      }
+    } catch {
+      setErrorMsg("Network error. Please try again shortly.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="mt-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3 text-center space-y-1">
+        <div className="flex items-center justify-center gap-1.5 text-emerald-400 font-bold text-xs">
+          <CheckCircle2 className="w-4 h-4" />
+          <span>Message Sent Successfully!</span>
+        </div>
+        <p className="text-[11px] text-emerald-300/80">
+          Raghav has received your message and will get back to you shortly.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mt-2.5 space-y-2 rounded-xl bg-slate-950/85 border border-cyan-500/25 p-3 shadow-lg shadow-black/40 text-left"
+    >
+      <div className="flex items-center justify-between border-b border-white/10 pb-1.5">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-cyan-400">
+          <Sparkles className="w-3.5 h-3.5 text-cyan-300" />
+          <span>Quick Connect Card</span>
+        </div>
+        <span className="text-[9px] text-slate-400 font-mono">Direct Connect</span>
+      </div>
+
+      {errorMsg && (
+        <div className="text-[10px] text-rose-300 bg-rose-500/10 border border-rose-500/30 px-2 py-1 rounded-md">
+          {errorMsg}
+        </div>
+      )}
+
+      {/* Name Input */}
+      <div className="relative">
+        <User className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your full name"
+          disabled={isSubmitting}
+          className="w-full bg-slate-900/90 border border-white/10 focus:border-cyan-500/60 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-white placeholder-slate-500 outline-none transition-all"
+        />
+      </div>
+
+      {/* Email Input */}
+      <div className="relative">
+        <Mail className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Your email address"
+          disabled={isSubmitting}
+          className="w-full bg-slate-900/90 border border-white/10 focus:border-cyan-500/60 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-white placeholder-slate-500 outline-none transition-all"
+        />
+      </div>
+
+      {/* Message Input */}
+      <div className="relative">
+        <MessageSquare className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+        <textarea
+          rows={2}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="What would you like to discuss?"
+          disabled={isSubmitting}
+          className="w-full bg-slate-900/90 border border-white/10 focus:border-cyan-500/60 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-white placeholder-slate-500 outline-none resize-none transition-all"
+        />
+      </div>
+
+      {/* Send Button */}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 py-2 text-xs font-bold text-white shadow-md shadow-cyan-500/25 active:scale-[0.98] transition-all disabled:opacity-50 cursor-pointer"
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            <span>Saving & Sending...</span>
+          </>
+        ) : (
+          <>
+            <Send className="w-3.5 h-3.5" />
+            <span>Send to Raghav</span>
+          </>
+        )}
+      </button>
+    </form>
+  );
+}
+
+interface AIChatWidgetProps {
+  onOpenResume?: () => void;
+  isResumeOpen?: boolean;
+}
+
+export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
+
+  // Derive chat window open state (automatically closed if resume modal is active)
+  const isChatOpen = isOpen && !isResumeOpen;
 
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -45,28 +210,54 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
+  const handleToggleOpen = () => {
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next) {
+        setHasUnread(false);
+      }
+      return next;
+    });
+  };
+
   useEffect(() => {
-    if (isOpen) {
-      setHasUnread(false);
-      setTimeout(() => inputRef.current?.focus(), 150);
+    if (isChatOpen) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 150);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isChatOpen]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
+  const handleLeadSent = (leadName: string, leadEmail: string) => {
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: createMessageId("ai"),
+          sender: "ai",
+          text: `🎉 Thank you **${leadName}**! Your message has been delivered directly to Raghav. He will review it and get back to you at \`${leadEmail}\` shortly.`,
+          timestamp: getFormattedTime(),
+          suggestions: ["View Resume (PDF)", "Technical Skills >", "Work Experience >"],
+        },
+      ]);
+    }, 350);
+  };
+
   const handleSendMessage = async (textToSend?: string) => {
     const messageText = (textToSend || input).trim();
     if (!messageText || isTyping) return;
 
-    // Special quick action check for Resume
+    // Special quick action check for Resume - close chatbot and open resume modal
     if (messageText.toLowerCase().includes("resume") && onOpenResume) {
+      setIsOpen(false);
       onOpenResume();
     }
 
     const userMsg: Message = {
-      id: `user-${Date.now()}`,
+      id: createMessageId("user"),
       sender: "user",
       text: messageText,
       timestamp: getFormattedTime(),
@@ -77,8 +268,9 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
     setIsTyping(true);
 
     try {
-      // Attempt API Route call (if configured)
-      const res = await fetch("/api/chat", {
+      // Attempt API call to backend (or local API fallback)
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      const res = await fetch(`${backendUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: messageText }),
@@ -87,14 +279,16 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
       if (res.ok) {
         const data = await res.json();
         if (data && data.response) {
+          const connectIntent = isConnectIntent(messageText);
           setTimeout(() => {
             setMessages((prev) => [
               ...prev,
               {
-                id: `ai-${Date.now()}`,
+                id: createMessageId("ai"),
                 sender: "ai",
                 text: data.response,
                 timestamp: getFormattedTime(),
+                actionType: connectIntent ? "connect-card" : undefined,
               },
             ]);
             setIsTyping(false);
@@ -112,7 +306,7 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
       setMessages((prev) => [
         ...prev,
         {
-          id: `ai-${Date.now()}`,
+          id: createMessageId("ai"),
           sender: "ai",
           text: responseObj.text,
           timestamp: getFormattedTime(),
@@ -127,7 +321,7 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
   const handleClearChat = () => {
     setMessages([
       {
-        id: `welcome-${Date.now()}`,
+        id: createMessageId("welcome"),
         sender: "ai",
         text: `Chat reset! Ask me anything about Raghav's background, skills, work experience, education, or resume.`,
         timestamp: getFormattedTime(),
@@ -192,32 +386,26 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
       {/* Floating Action Button with Animated Border Glow */}
       <div className="fixed bottom-5 right-5 z-[9999]">
         <motion.button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={handleToggleOpen}
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.94 }}
           className="group relative flex items-center justify-center rounded-full"
         >
-          <AnimatedBorderGlow
-            glowColor="theme"
-            duration={3.5}
-            interactive={true}
-            containerClassName="w-14 h-14 rounded-full p-[2px] shadow-[0_0_25px_var(--accent-glow)]"
-            className="w-full h-full rounded-full border-0 bg-slate-950 flex items-center justify-center text-white font-extrabold light:bg-white"
-          >
+          <div className="w-14 h-14 rounded-full border-2 border-white/20 bg-slate-950 flex items-center justify-center text-white font-extrabold shadow-[0_0_25px_var(--accent-glow)] light:bg-white light:border-slate-300">
             <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-2xl font-mono">
               R
             </span>
-          </AnimatedBorderGlow>
+          </div>
 
           {/* Close X Badge when modal is open */}
-          {isOpen && (
+          {isChatOpen && (
             <span className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-rose-500 text-white border-2 border-slate-950 shadow-md z-20">
               <X className="h-3.5 w-3.5 stroke-[3]" />
             </span>
           )}
 
           {/* Unread Pulsing Dot */}
-          {hasUnread && !isOpen && (
+          {hasUnread && !isChatOpen && (
             <span className="absolute -top-1 -right-1 flex h-4 w-4 z-10">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-4 w-4 rounded-full bg-emerald-500 border-2 border-slate-950" />
@@ -225,7 +413,7 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
           )}
 
           {/* Tooltip on Hover */}
-          {!isOpen && (
+          {!isChatOpen && (
             <span className="absolute right-16 hidden rounded-xl border border-white/10 bg-slate-900/90 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-md shadow-lg group-hover:block whitespace-nowrap">
               Ask AI Assistant ✨
             </span>
@@ -235,7 +423,7 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
 
       {/* Glassmorphic Chat Modal Drawer */}
       <AnimatePresence>
-        {isOpen && (
+        {isChatOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -247,22 +435,17 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
             <div className="flex items-center justify-between border-b border-white/10 bg-slate-950/80 px-4 py-3 light:border-slate-200 light:bg-slate-50">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="relative flex shrink-0">
-                  <AnimatedBorderGlow
-                    glowColor="theme"
-                    duration={4}
-                    containerClassName="w-10 h-10 rounded-xl p-[1.5px] shrink-0 shadow-lg shadow-cyan-500/20"
-                    className="w-full h-full rounded-[calc(0.75rem-1.5px)] border-0 bg-slate-950 p-0 flex items-center justify-center text-white font-extrabold text-base leading-none light:bg-white light:text-slate-900"
-                  >
+                  <div className="w-10 h-10 rounded-xl border border-white/15 bg-slate-950 flex items-center justify-center text-white font-extrabold text-base leading-none shadow-lg shadow-cyan-500/20 light:bg-white light:border-slate-300 light:text-slate-900">
                     <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-base font-mono">
                       R
                     </span>
-                  </AnimatedBorderGlow>
+                  </div>
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-slate-950 z-20 shadow-sm" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-xs sm:text-sm font-bold text-white light:text-slate-900 truncate">
-                      Raghav's AI Assistant
+                      Raghav&apos;s AI Assistant
                     </h3>
                     <span className="rounded-full bg-blue-500/20 px-1.5 py-0.2 text-[9px] font-mono text-blue-400 border border-blue-500/30">
                       Online
@@ -314,12 +497,22 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
                     {msg.actionType === "resume" && onOpenResume && (
                       <div className="mt-3 pt-2 border-t border-white/10">
                         <button
-                          onClick={onOpenResume}
-                          className="flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-500 transition-colors"
+                          onClick={() => {
+                            setIsOpen(false);
+                            onOpenResume();
+                          }}
+                          className="flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-500 transition-colors cursor-pointer"
                         >
                           <FileText className="h-3.5 w-3.5" />
                           <span>Open Live Resume Modal</span>
                         </button>
+                      </div>
+                    )}
+
+                    {/* Interactive Connect Form Card */}
+                    {msg.actionType === "connect-card" && (
+                      <div className="mt-3 pt-2 border-t border-white/10">
+                        <ChatConnectCard onSent={handleLeadSent} />
                       </div>
                     )}
                   </div>
@@ -375,18 +568,12 @@ export function PortfolioChatbot({ onOpenResume }: AIChatWidgetProps) {
                   className="flex-1 bg-transparent py-1.5 text-xs sm:text-sm text-white placeholder-slate-500 outline-none light:text-slate-900 light:placeholder-slate-400"
                 />
                 {input.trim() && !isTyping ? (
-                  <AnimatedBorderGlow
-                    glowColor="theme"
-                    containerClassName="h-8 w-8 rounded-xl p-[1.5px] shrink-0 shadow-md shadow-cyan-500/20"
-                    className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all"
+                  <button
+                    type="submit"
+                    className="h-8 w-8 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white hover:scale-105 active:scale-95 transition-all shadow-md shadow-blue-500/20 focus:outline-none shrink-0"
                   >
-                    <button
-                      type="submit"
-                      className="w-full h-full flex items-center justify-center text-white focus:outline-none"
-                    >
-                      <Send className="h-3.5 w-3.5" />
-                    </button>
-                  </AnimatedBorderGlow>
+                    <Send className="h-3.5 w-3.5" />
+                  </button>
                 ) : (
                   <button
                     type="submit"

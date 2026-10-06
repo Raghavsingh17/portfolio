@@ -93,7 +93,7 @@ export function CodePlayground({
           </div>
         ) : (
           <pre className="p-4 overflow-x-auto rounded-xl border border-white/10 bg-slate-950 font-mono text-xs text-slate-200 leading-relaxed max-h-[300px]">
-            <code>{codeSnippet}</code>
+            <code className={`language-${language}`}>{codeSnippet}</code>
           </pre>
         )}
       </div>

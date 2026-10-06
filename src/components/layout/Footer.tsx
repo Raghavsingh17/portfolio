@@ -2,15 +2,12 @@
 
 import { useEffect, useState, memo } from "react";
 import { ArrowUp } from "lucide-react";
-import { MagneticButton } from "@/src/components/reactbits/MagneticButton";
-import { useCursor } from "@/src/context/CursorContext";
-import { AnimatedBorderGlow } from "../reactbits/AnimatedBorderGlow";
-import { GlowBorderButton } from "../reactbits/GlowBorderButton";
+import { MagneticButton } from "@/src/components/animations/MagneticButton";
+import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
 import { motion } from "framer-motion";
 
 function FooterComponent() {
   const [time, setTime] = useState<string>("");
-  const { setCursorMode } = useCursor();
 
   useEffect(() => {
     const updateTime = () => {
@@ -49,21 +46,13 @@ function FooterComponent() {
               whileHover={{ scale: 1.08, rotate: 2 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              onMouseEnter={() => setCursorMode("pointer")}
-              onMouseLeave={() => setCursorMode("default")}
               className="group flex items-center justify-center gap-3 text-xl font-bold tracking-tight text-white light:text-slate-900"
             >
-              <AnimatedBorderGlow
-                glowColor="theme"
-                duration={4}
-                interactive={true}
-                containerClassName="w-9 h-9 rounded-xl p-[1.5px] shrink-0 shadow-lg shadow-blue-500/20"
-                className="w-full h-full rounded-[calc(0.75rem-1.5px)] border-0 bg-slate-950 p-0 flex items-center justify-center text-white font-extrabold text-lg leading-none light:bg-white light:text-slate-900"
-              >
+              <div className="w-9 h-9 rounded-xl border border-white/15 bg-slate-950 flex items-center justify-center text-white font-extrabold text-lg leading-none shadow-lg shadow-blue-500/20 light:bg-white light:border-slate-300 light:text-slate-900">
                 <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-lg font-mono">
                   R
                 </span>
-              </AnimatedBorderGlow>
+              </div>
               <span className="text-lg font-extrabold tracking-tight text-white light:text-slate-900">
                 Raghav<span className="text-blue-500">.dev</span>
               </span>

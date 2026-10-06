@@ -17,7 +17,6 @@
     --primary-glow: rgba(59, 130, 246, 0.35);
     --accent: #8b5cf6;
     --secondary-glow: rgba(139, 92, 246, 0.35);
-    --grid-line: rgba(255, 255, 255, 0.04);
   }
 
   .light {
@@ -36,12 +35,40 @@
     --primary-glow: rgba(37, 99, 235, 0.2);
     --accent: #7c3aed;
     --secondary-glow: rgba(124, 58, 237, 0.2);
-    --grid-line: rgba(0, 0, 0, 0.05);
   }
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Lenis Smooth Scroll Overrides */
+html.lenis,
+html.lenis body {
+  height: auto;
+  scroll-behavior: auto !important;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent],
+.lenis [data-lenis-prevent-wheel],
+.lenis [data-lenis-prevent-touch],
+.lenis [data-lenis-prevent-vertical],
+.lenis [data-lenis-prevent-horizontal] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+.lenis.lenis-autoToggle {
+  transition-property: overflow;
+  transition-duration: 1ms;
+  transition-behavior: allow-discrete;
 }
 
 body {
@@ -255,4 +282,107 @@ div[data-nextjs-dialog-overlay],
 [data-nextjs-toast-errors] {
   display: none !important;
 }
+
+/* Serene Luxury Landing Typography & Glass Styles */
+.font-inter {
+  font-family: 'Inter', sans-serif;
+}
+
+.font-instrument {
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.font-dancing {
+  font-family: 'Dancing Script', cursive;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%,
+    rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.text-glow {
+  text-shadow: 0 0 40px rgba(255, 255, 255, 0.4), 0 0 80px rgba(255, 255, 255, 0.2), 0 0 120px rgba(255, 255, 255, 0.1);
+}
+
+.button-glow {
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.3), 0 0 40px rgba(255, 255, 255, 0.1);
+}
+
+/* 3D Cosmic Gyroscope & Floating Animations */
+@keyframes spin-3d-ring-1 {
+  0% { transform: rotateX(70deg) rotateZ(0deg); }
+  100% { transform: rotateX(70deg) rotateZ(360deg); }
+}
+
+@keyframes spin-3d-ring-2 {
+  0% { transform: rotateY(70deg) rotateZ(0deg); }
+  100% { transform: rotateY(70deg) rotateZ(-360deg); }
+}
+
+@keyframes spin-3d-ring-3 {
+  0% { transform: rotateX(35deg) rotateY(45deg) rotateZ(0deg); }
+  100% { transform: rotateX(35deg) rotateY(45deg) rotateZ(360deg); }
+}
+
+@keyframes float-levitate {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+}
+
+@keyframes pulse-core {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+.animate-3d-ring-1 {
+  animation: spin-3d-ring-1 20s linear infinite;
+}
+
+.animate-3d-ring-2 {
+  animation: spin-3d-ring-2 25s linear infinite;
+}
+
+.animate-3d-ring-3 {
+  animation: spin-3d-ring-3 30s linear infinite;
+}
+
+.animate-float-levitate {
+  animation: float-levitate 5s ease-in-out infinite;
+}
+
+.animate-pulse-core {
+  animation: pulse-core 3s ease-in-out infinite;
+}
+
 

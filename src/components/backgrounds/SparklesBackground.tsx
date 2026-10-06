@@ -16,7 +16,7 @@ interface SparkleParticle {
   isStar: boolean;
 }
 
-interface SparklesBackgroundProps {
+export interface SparklesBackgroundProps {
   className?: string;
   count?: number;
   speed?: number;

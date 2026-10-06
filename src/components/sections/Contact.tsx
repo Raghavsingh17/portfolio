@@ -4,17 +4,14 @@ import React, { useState, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, MapPin, Send, CheckCircle2, Copy, MessageSquare } from "lucide-react";
 import confetti from "canvas-confetti";
-import { Github, Linkedin, Instagram } from "@/src/components/ui/Icons";
+import { Github, Linkedin, Instagram } from "@/src/components/icons/Icons";
 import { PERSONAL_INFO } from "@/src/data/portfolio";
-import { ScrollReveal } from "@/src/components/reactbits/ScrollReveal";
+import { ScrollReveal } from "@/src/components/animations/ScrollReveal";
 import { SpotlightCard } from "@/src/components/reactbits/SpotlightCard";
-import { ShinyText } from "@/src/components/reactbits/ShinyText";
+import { ShinyText } from "@/src/components/animations/ShinyText";
 import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
-import { AnimatedBorderGlow } from "@/src/components/reactbits/AnimatedBorderGlow";
-import { MagneticButton } from "@/src/components/reactbits/MagneticButton";
-import { SparklesBackground } from "@/src/components/reactbits/SparklesBackground";
-import { useCursor } from "@/src/context/CursorContext";
-
+import { MagneticButton } from "@/src/components/animations/MagneticButton";
+import { SparklesBackground } from "@/src/components/backgrounds/SparklesBackground";
 
 function ContactComponent() {
   const [formData, setFormData] = useState({
@@ -27,7 +24,6 @@ function ContactComponent() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const { setCursorMode } = useCursor();
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(PERSONAL_INFO.socials.emailRaw || "raghavsingh7631@gmail.com");
@@ -43,7 +39,8 @@ function ContactComponent() {
     setErrorMessage("");
 
     try {
-      const response = await fetch("/api/contact", {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      const response = await fetch(`${backendUrl}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -65,9 +62,10 @@ function ContactComponent() {
       } else {
         throw new Error(data.error || "Failed to deliver message. Please try again.");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsSubmitting(false);
-      setErrorMessage(err?.message || "Something went wrong. Please try again.");
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      setErrorMessage(msg);
     }
   };
 
@@ -87,7 +85,7 @@ function ContactComponent() {
             Get In Touch
           </span>
           <h2 className="mt-3 sm:mt-4 text-2xl font-extrabold text-white light:text-slate-900 sm:text-5xl tracking-tight">
-            <ShinyText>Let's build something extraordinary</ShinyText>.
+            <ShinyText>Let&apos;s build something extraordinary</ShinyText>.
           </h2>
           <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-xs sm:text-base text-slate-400 light:text-slate-600 px-2">
             Have a project in mind, a question, or an opportunity? Feel free to reach out directly.
@@ -97,8 +95,7 @@ function ContactComponent() {
         <div className="mt-8 sm:mt-16 grid gap-6 sm:gap-10 lg:grid-cols-12">
           {/* Contact Details & Copy Card */}
           <ScrollReveal direction="left" className="lg:col-span-5 flex flex-col justify-between space-y-6">
-            <AnimatedBorderGlow glowColor="theme" containerClassName="h-full" className="p-0">
-              <SpotlightCard className="h-full flex flex-col justify-between p-4 sm:p-8 border-0 dark:bg-slate-950/80 light:bg-white/80">
+            <SpotlightCard className="h-full flex flex-col justify-between p-4 sm:p-8 dark:bg-slate-950/80 light:bg-white/80">
                 <div>
                   <div className="flex items-center gap-2 text-blue-400 font-mono text-xs uppercase tracking-widest mb-4 sm:mb-6">
                     <MessageSquare className="h-4 w-4 shrink-0" />
@@ -109,7 +106,7 @@ function ContactComponent() {
                     Open for new challenges & full-time opportunities.
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-300 light:text-slate-600 leading-relaxed mb-6 sm:mb-8">
-                    I'm available for technical consultation, full-stack application development, and leading frontend architectural rewrites.
+                    I&apos;m available for technical consultation, full-stack application development, and leading frontend architectural rewrites.
                   </p>
 
                   {/* Email Copy Card */}
@@ -122,8 +119,6 @@ function ContactComponent() {
                       <button
                         suppressHydrationWarning
                         onClick={handleCopyEmail}
-                        onMouseEnter={() => setCursorMode("pointer")}
-                        onMouseLeave={() => setCursorMode("default")}
                         className="flex h-8 sm:h-9 items-center justify-center gap-1.5 rounded-xl bg-blue-600/20 px-3 text-xs font-semibold text-blue-300 border border-blue-500/30 transition-colors hover:bg-blue-600 hover:text-white shrink-0 self-start sm:self-auto"
                       >
                         {copiedEmail ? (
@@ -143,13 +138,9 @@ function ContactComponent() {
 
                   {/* Location info */}
                   <div className="flex items-center gap-3 text-xs sm:text-sm text-slate-300 light:text-slate-600 mb-6">
-                    <AnimatedBorderGlow
-                      glowColor="theme"
-                      containerClassName="h-10 w-10 shrink-0 rounded-xl p-[1.5px] shadow-lg shadow-emerald-500/20"
-                      className="p-0 h-full w-full rounded-[calc(0.75rem-1.5px)] bg-slate-950/90 flex items-center justify-center text-emerald-400"
-                    >
+                    <div className="h-10 w-10 shrink-0 rounded-xl border border-white/10 bg-slate-950/90 flex items-center justify-center text-emerald-400 shadow-lg shadow-emerald-500/20">
                       <MapPin className="h-4.5 w-4.5" />
-                    </AnimatedBorderGlow>
+                    </div>
                     <div>
                       <div className="font-semibold text-white light:text-slate-900">Location</div>
                       <div>{PERSONAL_INFO.location}</div>
@@ -194,13 +185,9 @@ function ContactComponent() {
                             whileTap={{ scale: 0.95 }}
                             className="group/tooltip relative"
                           >
-                            <AnimatedBorderGlow
-                              glowColor={item.glowColor}
-                              containerClassName="rounded-full p-[1.5px] shadow-md"
-                              className="h-10 w-10 sm:h-11 sm:w-11 rounded-full p-0 flex items-center justify-center bg-slate-950/90 text-slate-300 hover:text-white transition-all"
-                            >
+                            <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-full border border-white/10 p-0 flex items-center justify-center bg-slate-950/90 text-slate-300 hover:text-white transition-all shadow-md">
                               {item.icon}
-                            </AnimatedBorderGlow>
+                            </div>
                             {/* Hover Tooltip */}
                             <span className="pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-2.5 py-1 text-[10px] font-semibold text-white opacity-0 shadow-lg border border-white/10 transition-all duration-200 group-hover/tooltip:opacity-100 group-hover/tooltip:-top-10 light:bg-slate-800 z-30">
                               {item.name}
@@ -223,13 +210,11 @@ function ContactComponent() {
                   </span>
                 </div>
               </SpotlightCard>
-            </AnimatedBorderGlow>
           </ScrollReveal>
 
           {/* Contact Form Card */}
           <ScrollReveal direction="right" className="lg:col-span-7">
-            <AnimatedBorderGlow glowColor="theme" containerClassName="h-full" className="p-0">
-              <SpotlightCard className="h-full border-0 p-4 sm:p-8 dark:bg-slate-950/95 light:bg-white/95 flex flex-col justify-between">
+            <SpotlightCard className="h-full p-4 sm:p-8 dark:bg-slate-950/95 light:bg-white/95 flex flex-col justify-between">
                 <AnimatePresence mode="wait">
                   {isSubmitted ? (
                     <motion.div
@@ -246,7 +231,7 @@ function ContactComponent() {
                         Message Sent Successfully!
                       </h3>
                       <p className="mt-2 max-w-md text-xs sm:text-sm text-slate-300 light:text-slate-600">
-                        Thank you for reaching out. I've received your message and will get back to you shortly.
+                        Thank you for reaching out. I&apos;ve received your message and will get back to you shortly.
                       </p>
                       <button
                         suppressHydrationWarning
@@ -358,7 +343,6 @@ function ContactComponent() {
                   )}
                 </AnimatePresence>
               </SpotlightCard>
-            </AnimatedBorderGlow>
           </ScrollReveal>
         </div>
       </div>

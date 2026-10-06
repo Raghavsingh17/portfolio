@@ -3,7 +3,6 @@
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/src/lib/utils";
-import { useCursor } from "@/src/context/CursorContext";
 
 interface MagneticButtonProps {
   children: React.ReactNode;
@@ -29,7 +28,6 @@ export function MagneticButton({
   const Tag = Component || (href ? "a" : "div");
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const { setCursorMode } = useCursor();
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
@@ -44,11 +42,6 @@ export function MagneticButton({
 
   const handleMouseLeave = () => {
     setPosition({ x: 0, y: 0 });
-    setCursorMode("default");
-  };
-
-  const handleMouseEnter = () => {
-    setCursorMode("magnetic");
   };
 
   return (
@@ -56,7 +49,6 @@ export function MagneticButton({
       ref={ref}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onMouseEnter={handleMouseEnter}
       animate={{ x: position.x, y: position.y }}
       transition={{ type: "spring", stiffness: 250, damping: 15, mass: 0.1 }}
       className="inline-block"
@@ -67,3 +59,5 @@ export function MagneticButton({
     </motion.div>
   );
 }
+
+export default MagneticButton;
