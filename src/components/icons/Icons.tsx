@@ -1,5 +1,3 @@
-
-
 export function Github({ className }: { className?: string }) {
   return (
     <svg

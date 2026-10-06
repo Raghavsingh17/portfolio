@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/src/context/ThemeContext";
-import { CursorProvider } from "@/src/context/CursorContext";
-import { CustomCursor } from "@/src/components/reactbits/CustomCursor";
-import { ScrollProgress } from "@/src/components/ui/ScrollProgress";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -52,13 +48,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col bg-slate-950 text-slate-100 selection:bg-blue-500/30 selection:text-white dark:bg-slate-950 light:bg-slate-50 light:text-slate-900">
-        <ThemeProvider>
-          <CursorProvider>
-            <ScrollProgress />
-            <CustomCursor />
-            {children}
-          </CursorProvider>
-        </ThemeProvider>
+        {children}
       </body>
     </html>
   );

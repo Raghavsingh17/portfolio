@@ -3,7 +3,7 @@ import { Project, Skill, Experience, Education } from "../types/portfolio";
 export const SOCIAL_LINKS = {
   github: "https://github.com/Raghavsingh17",
   linkedin: "https://www.linkedin.com/in/hiraghavsingh",
-  instagram: "https://www.instagram.com/raghavsingh7631",
+  instagram: "https://www.instagram.com/raghav_1521",
   email: "mailto:raghavsingh7631@gmail.com",
   emailRaw: "raghavsingh7631@gmail.com",
 };

@@ -2,8 +2,6 @@
 
 import React, { useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { useTheme } from "@/src/context/ThemeContext";
-import { useCursor } from "@/src/context/CursorContext";
 import { cn } from "@/src/lib/utils";
 
 interface GlowBorderButtonProps {
@@ -13,7 +11,7 @@ interface GlowBorderButtonProps {
   download?: string;
   target?: string;
   rel?: string;
-  onClick?: (e?: any) => void;
+  onClick?: (e: React.MouseEvent<HTMLElement>) => void;
   className?: string;
   innerClassName?: string;
   glowColor?:
@@ -44,6 +42,7 @@ const conicGradients: Record<string, string> = {
   cyber: "conic-gradient(from 0deg, transparent 0%, transparent 45%, #00f0ff 65%, #ff007f 85%, #a855f7 100%)",
   sunset: "conic-gradient(from 0deg, transparent 0%, transparent 50%, #f59e0b 70%, #f43f5e 88%, #ec4899 100%)",
   gold: "conic-gradient(from 0deg, transparent 0%, transparent 65%, #d97706 82%, #fbbf24 100%)",
+  theme: "conic-gradient(from 0deg, transparent 0%, transparent 15%, #06b6d4 30%, #3b82f6 50%, #a855f7 70%, #ec4899 85%, #f43f5e 100%)",
 };
 
 const sizeStyles = {
@@ -69,15 +68,13 @@ export function GlowBorderButton({
   magnetic = true,
   magneticDistance = 0.35,
 }: GlowBorderButtonProps) {
-  const { currentPreset } = useTheme();
-  const { setCursorMode } = useCursor();
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const conicBg =
-    glowColor && glowColor !== "theme"
-      ? conicGradients[glowColor] || glowColor
-      : currentPreset.colors.conicGradient || conicGradients.cyan;
+    glowColor && conicGradients[glowColor]
+      ? conicGradients[glowColor]
+      : conicGradients.theme;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!magnetic || !ref.current) return;
@@ -90,27 +87,21 @@ export function GlowBorderButton({
     setPosition({ x: middleX * magneticDistance, y: middleY * magneticDistance });
   };
 
-  const handleMouseEnter = () => {
-    setCursorMode("magnetic");
-  };
-
   const handleMouseLeave = () => {
     if (magnetic) {
       setPosition({ x: 0, y: 0 });
     }
-    setCursorMode("default");
   };
 
   const content = (
     <motion.div
       ref={ref}
       onMouseMove={handleMouseMove}
-      onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       animate={{ x: position.x, y: position.y }}
       transition={{ type: "spring", stiffness: 250, damping: 15, mass: 0.1 }}
       className={cn(
-        "group relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden transition-all duration-300 active:scale-95 hover:scale-[1.02]",
+        "group relative inline-flex items-center justify-center p-[2px] rounded-full overflow-hidden transition-all duration-300 active:scale-95 hover:scale-[1.02] isolation-isolate transform-gpu",
         className
       )}
     >
@@ -118,7 +109,7 @@ export function GlowBorderButton({
       <motion.div
         animate={{ rotate: 360 }}
         transition={{ duration: 3.5, repeat: Infinity, ease: "linear" }}
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[350%] w-[350%] opacity-90 transition-opacity duration-300 group-hover:opacity-100 will-change-transform"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[350%] w-[350%] aspect-square opacity-90 transition-opacity duration-300 group-hover:opacity-100 transform-gpu will-change-transform"
         style={{
           x: "-50%",
           y: "-50%",
@@ -128,8 +119,8 @@ export function GlowBorderButton({
 
       {/* Ambient Glow Aura */}
       <div
-        className="pointer-events-none absolute inset-0 rounded-full opacity-0 blur-lg transition-opacity duration-300 group-hover:opacity-50"
-        style={{ background: currentPreset.colors.primaryGlow }}
+        className="pointer-events-none absolute inset-0 rounded-full opacity-0 blur-lg transition-opacity duration-300 [@media(hover:hover)]:group-hover:opacity-50"
+        style={{ background: "rgba(59, 130, 246, 0.35)" }}
       />
 
       {/* Inner Button Core - Medium Size by Default */}

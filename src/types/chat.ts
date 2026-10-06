@@ -4,5 +4,5 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   suggestions?: string[];
-  actionType?: "resume" | "contact";
+  actionType?: "resume" | "contact" | "connect-card";
 }

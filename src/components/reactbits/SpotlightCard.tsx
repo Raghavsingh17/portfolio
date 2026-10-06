@@ -53,7 +53,7 @@ function SpotlightCardComponent({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       className={cn(
-        "relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/90 p-6 transition-all duration-300 dark:border-white/10 dark:bg-slate-950/90 light:border-slate-200 light:bg-white/95 light:shadow-sm subpixel-antialiased",
+        "relative overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur-xl p-6 transition-all duration-300 dark:border-white/10 dark:bg-slate-950/75 light:border-slate-200 light:bg-white/95 light:shadow-sm subpixel-antialiased",
         className
       )}
       {...props}

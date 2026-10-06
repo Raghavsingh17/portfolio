@@ -7,6 +7,13 @@ export const QUICK_PROMPTS = [
   "Education & Credentials >",
 ];
 
+let messageIdCounter = 0;
+
+export function createMessageId(prefix: string = "msg"): string {
+  messageIdCounter += 1;
+  return `${prefix}-${Date.now()}-${messageIdCounter}`;
+}
+
 export function getFormattedTime(): string {
   return new Date().toLocaleTimeString("en-US", {
     hour: "2-digit",
@@ -14,18 +21,109 @@ export function getFormattedTime(): string {
   });
 }
 
+export function isConnectIntent(query: string): boolean {
+  const q = query.toLowerCase();
+  return (
+    q.includes("connect") ||
+    q.includes("contact") ||
+    q.includes("hire") ||
+    q.includes("reach") ||
+    q.includes("collaborate") ||
+    q.includes("work together") ||
+    q.includes("get in touch") ||
+    q.includes("talk to") ||
+    q.includes("message") ||
+    q.includes("touch base") ||
+    q.includes("freelance") ||
+    q.includes("opportunity") ||
+    q.includes("available")
+  );
+}
+
+export function isGreetingIntent(query: string): boolean {
+  const q = query.trim().toLowerCase();
+  return (
+    q === "hi" ||
+    q === "hello" ||
+    q === "hey" ||
+    q === "hi!" ||
+    q === "hello!" ||
+    q === "hey!" ||
+    q === "hi there" ||
+    q === "hello there" ||
+    /^hi[\s!.,?]*$/i.test(q) ||
+    /^hello[\s!.,?]*$/i.test(q) ||
+    /^hey[\s!.,?]*$/i.test(q)
+  );
+}
+
 // Pure Client-side Rich Intent & Knowledge Engine
 export function generateLocalResponse(query: string): {
   text: string;
-  actionType?: "resume" | "contact";
+  actionType?: "resume" | "contact" | "connect-card";
   suggestions?: string[];
 } {
   const q = query.toLowerCase().replace(">", "").trim();
 
+  // Greeting check
+  if (isGreetingIntent(query)) {
+    return {
+      text: "Hi, How can I help you?",
+      suggestions: QUICK_PROMPTS,
+    };
+  }
+
+  // 0. Guardrail: Reject Generic Coding Tutorials & Non-Portfolio Questions (e.g. "what is react", "what is js")
+  const isGenericQuestion =
+    q.startsWith("what is") ||
+    q.startsWith("what's") ||
+    q.startsWith("whats") ||
+    q.startsWith("who is") ||
+    q.startsWith("who's") ||
+    q.startsWith("explain ") ||
+    q.startsWith("define ") ||
+    q.startsWith("how to ") ||
+    q.startsWith("how do i") ||
+    q.startsWith("teach me") ||
+    q.includes("tutorial") ||
+    q.includes("syntax") ||
+    q.includes("meaning of") ||
+    q.includes("difference between");
+
+  const isRaghavRelated =
+    q.includes("raghav") ||
+    q.includes("kumar") ||
+    q.includes("you") ||
+    q.includes("your") ||
+    q.includes("experience") ||
+    q.includes("work") ||
+    q.includes("portfolio") ||
+    q.includes("project") ||
+    q.includes("resume") ||
+    q.includes("cv") ||
+    q.includes("education") ||
+    q.includes("college") ||
+    q.includes("degree") ||
+    q.includes("hire") ||
+    q.includes("connect") ||
+    q.includes("contact");
+
+  if (isGenericQuestion && !isRaghavRelated) {
+    return {
+      text: `⚠️ **Question Out of Scope**\n\nI am **Raghav's Portfolio Assistant**, designed specifically to answer questions about **Raghav's skills, work experience, projects, education, and collaboration inquiries**.\n\nI do not answer general programming definitions or tutorials (such as *"what is React"* or *"what is JS"*). However, you can ask about **Raghav's 2.5+ years of experience with React & JavaScript!**`,
+      suggestions: [
+        "Technical Skills >",
+        "Work Experience >",
+        "Let's Connect >",
+        "View Resume (PDF)",
+      ],
+    };
+  }
+
   // 1. About Me
   if (
     q.includes("about me") ||
-    q.includes("who is") ||
+    q.includes("who is raghav") ||
     q.includes("about raghav") ||
     q.includes("summary") ||
     q.includes("bio") ||
@@ -118,19 +216,23 @@ export function generateLocalResponse(query: string): {
     };
   }
 
-  // 7. Contact & Hiring
-  if (
-    q.includes("contact") ||
-    q.includes("hire") ||
-    q.includes("email") ||
-    q.includes("reach") ||
-    q.includes("available") ||
-    q.includes("location") ||
-    q.includes("remote")
-  ) {
+  // 7. Contact & Hiring (Triggers Quick Connect Card)
+  if (isConnectIntent(q)) {
+    return {
+      text: `🤝 **Let's Connect!**\n\nI'd be glad to discuss opportunities, frontend roles, or engineering collaborations. Please drop your details below and Raghav will reach back out to you directly:`,
+      actionType: "connect-card",
+      suggestions: [
+        "View Resume (PDF)",
+        "Technical Skills >",
+      ],
+    };
+  }
+
+  // 8. General Contact Info fallback
+  if (q.includes("email") || q.includes("location") || q.includes("remote")) {
     return {
       text: `📬 **Contact & Availability:**\n\n• **Email:** [raghavsingh7631@gmail.com](mailto:raghavsingh7631@gmail.com)\n• **LinkedIn:** [linkedin.com/in/hiraghavsingh](https://www.linkedin.com/in/hiraghavsingh)\n• **GitHub:** [github.com/Raghavsingh17](https://github.com/Raghavsingh17)\n• **Current Location:** Bengaluru, India (Open for Remote / Worldwide roles)`,
-      actionType: "contact",
+      actionType: "connect-card",
     };
   }
 

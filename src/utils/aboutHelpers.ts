@@ -1,4 +1,4 @@
-import { Briefcase, FileText, Smartphone, Palette, Code } from "lucide-react";
+import { Briefcase, FileText, Smartphone, Palette } from "lucide-react";
 
 export function getAboutHighlights(onOpenResume?: () => void) {
   return [

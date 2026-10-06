@@ -4,17 +4,13 @@ import { memo } from "react";
 import { Briefcase, Calendar, MapPin, ChevronRight } from "lucide-react";
 import { EXPERIENCES } from "@/src/data/portfolio";
 import { Experience as ExperienceType } from "@/src/types/portfolio";
-import { ScrollReveal } from "@/src/components/reactbits/ScrollReveal";
+import { ScrollReveal } from "@/src/components/animations/ScrollReveal";
 import { SpotlightCard } from "@/src/components/reactbits/SpotlightCard";
-import { ShinyText } from "@/src/components/reactbits/ShinyText";
-import { AnimatedBorderGlow } from "@/src/components/reactbits/AnimatedBorderGlow";
-import { RippleGrid } from "@/src/components/reactbits/RippleGrid";
+import { ShinyText } from "@/src/components/animations/ShinyText";
 
 function ExperienceComponent() {
   return (
     <section id="experience" className="relative py-24 sm:py-32 overflow-hidden scroll-mt-20">
-      {/* Interactive Ripple Grid Background */}
-      <RippleGrid />
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
@@ -49,67 +45,61 @@ function ExperienceComponent() {
 
                 {/* Experience Card */}
                 <div className="ml-12 w-full md:ml-0 md:w-1/2 md:px-6">
-                  <AnimatedBorderGlow glowColor="theme" containerClassName="h-full">
-                    <SpotlightCard className="h-full border-0">
+                  <SpotlightCard className="h-full">
                     {/* Period & Status */}
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span className="flex items-center gap-1.5 text-xs font-mono text-blue-400">
-                          <Calendar className="h-3.5 w-3.5" />
-                          {exp.period}
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                      <span className="flex items-center gap-1.5 text-xs font-mono text-blue-400">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {exp.period}
+                      </span>
+                      {exp.status === "Current" && (
+                        <span className="flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-400 border border-emerald-500/20">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span>Present Role</span>
                         </span>
-                        {exp.status === "Current" && (
-                          <AnimatedBorderGlow
-                            glowColor="theme"
-                            containerClassName="rounded-full p-[1.5px] shadow-sm shadow-emerald-500/20"
-                            className="px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-[10px] font-bold text-emerald-400 flex items-center justify-center gap-1.5"
-                          >
-                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            <span>Present Role</span>
-                          </AnimatedBorderGlow>
-                        )}
-                      </div>
+                      )}
+                    </div>
 
-                      <h3 className="text-xl font-bold text-white light:text-slate-900">
-                        {exp.role}
-                      </h3>
-                      <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-300 light:text-slate-600">
-                        <span className="text-blue-400">{exp.company}</span>
-                        <span className="flex items-center gap-1 text-slate-400">
-                          <MapPin className="h-3 w-3" />
-                          {exp.location}
+                    <h3 className="text-xl font-bold text-white light:text-slate-900">
+                      {exp.role}
+                    </h3>
+                    <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-slate-300 light:text-slate-600">
+                      <span className="text-blue-400">{exp.company}</span>
+                      <span className="flex items-center gap-1 text-slate-400">
+                        <MapPin className="h-3 w-3" />
+                        {exp.location}
+                      </span>
+                    </div>
+
+                    <p className="mt-4 text-xs sm:text-sm text-slate-300 light:text-slate-600 leading-relaxed">
+                      {exp.summary}
+                    </p>
+
+                    {/* Achievements bullets */}
+                    <ul className="mt-4 space-y-2">
+                      {exp.achievements.map((item, itemIdx) => (
+                        <li
+                          key={itemIdx}
+                          className="flex items-start gap-2 text-xs text-slate-300 light:text-slate-600"
+                        >
+                          <ChevronRight className="h-4 w-4 shrink-0 text-blue-400 mt-0.5" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    {/* Tech Badges */}
+                    <div className="mt-6 flex flex-wrap gap-1.5 pt-4 border-t border-white/10 light:border-slate-200">
+                      {exp.technologies.map((tech) => (
+                        <span
+                          key={tech}
+                          className="rounded-md bg-slate-800/80 px-2 py-0.5 text-[10px] font-mono text-slate-300 light:bg-slate-100 light:text-slate-600"
+                        >
+                          {tech}
                         </span>
-                      </div>
-
-                      <p className="mt-4 text-xs sm:text-sm text-slate-300 light:text-slate-600 leading-relaxed">
-                        {exp.summary}
-                      </p>
-
-                      {/* Achievements bullets */}
-                      <ul className="mt-4 space-y-2">
-                        {exp.achievements.map((item, itemIdx) => (
-                          <li
-                            key={itemIdx}
-                            className="flex items-start gap-2 text-xs text-slate-300 light:text-slate-600"
-                          >
-                            <ChevronRight className="h-4 w-4 shrink-0 text-blue-400 mt-0.5" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-
-                      {/* Tech Badges */}
-                      <div className="mt-6 flex flex-wrap gap-1.5 pt-4 border-t border-white/10 light:border-slate-200">
-                        {exp.technologies.map((tech) => (
-                          <span
-                            key={tech}
-                            className="rounded-md bg-slate-800/80 px-2 py-0.5 text-[10px] font-mono text-slate-300 light:bg-slate-100 light:text-slate-600"
-                          >
-                            {tech}
-                          </span>
-                        ))}
-                      </div>
-                    </SpotlightCard>
-                  </AnimatedBorderGlow>
+                      ))}
+                    </div>
+                  </SpotlightCard>
                 </div>
               </ScrollReveal>
             );

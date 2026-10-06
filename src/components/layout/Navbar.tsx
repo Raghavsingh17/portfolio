@@ -2,13 +2,8 @@
 
 import { useState, useEffect, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, MousePointer, } from "lucide-react";
-import { ThemeToggle } from "@/src/components/ui/ThemeToggle";
-import { useCursor } from "@/src/context/CursorContext";
+import { Menu, X } from "lucide-react";
 import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
-import { AnimatedBorderGlow } from "@/src/components/reactbits/AnimatedBorderGlow";
-
-import { useTheme } from "@/src/context/ThemeContext";
 
 const NAV_ITEMS = [
   { label: "About", href: "#about" },
@@ -23,13 +18,12 @@ interface NavbarProps {
 }
 
 function NavbarComponent({ onOpenResume }: NavbarProps) {
-  const { currentPreset } = useTheme();
+  void onOpenResume;
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
-  const { cursorEnabled, toggleCursor, setCursorMode } = useCursor();
 
-  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLElement>, href: string) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -37,6 +31,11 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
     setMobileMenuOpen(false);
 
     const targetId = href.replace("#", "");
+
+    // Dispatch global navigation event so listening sections (e.g. About) can re-trigger entrance animations
+    window.dispatchEvent(
+      new CustomEvent("portfolio-navigate", { detail: { targetId } })
+    );
 
     // Delay scrolling slightly (120ms) so Framer Motion drawer height collapse
     // does not cancel the browser's smooth scroll engine.
@@ -47,7 +46,8 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
       }
       const element = document.getElementById(targetId);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        const y = element.getBoundingClientRect().top + window.scrollY - 60;
+        window.scrollTo({ top: y, behavior: "smooth" });
       } else {
         window.location.hash = href;
       }
@@ -87,36 +87,26 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
         }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand Logo with Animated 'R' Avatar Badge */}
+        {/* Brand Logo with Animated 'R' Avatar Badge & Dancing Script Brand */}
         <motion.a
           href="#hero"
           onClick={(e) => handleNavClick(e, "#hero")}
-          whileHover={{ scale: 1.08, rotate: 2 }}
+          whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 400, damping: 25 }}
-          onMouseEnter={() => setCursorMode("pointer")}
-          onMouseLeave={() => setCursorMode("default")}
-          className="group flex items-center gap-3 text-xl font-bold tracking-tight text-[var(--text-primary)] cursor-pointer"
+          className="group flex items-center gap-3 cursor-pointer"
         >
-          <AnimatedBorderGlow
-            glowColor="theme"
-            duration={4}
-            interactive={true}
-            containerClassName="w-10 h-10 rounded-xl p-[1.5px] shrink-0 shadow-lg shadow-blue-500/20"
-            className="w-full h-full rounded-[calc(0.75rem-1.5px)] border-0 bg-slate-950 p-0 flex items-center justify-center text-white font-extrabold text-lg leading-none light:bg-white light:text-slate-900"
-          >
-            <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-xl font-mono">
+          <div className="w-9 h-9 rounded-xl border border-white/15 bg-slate-950/80 backdrop-blur-md flex items-center justify-center text-white font-extrabold text-base leading-none shadow-lg shadow-blue-500/20 light:bg-white light:border-slate-300 light:text-slate-900">
+            <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-lg font-mono">
               R
             </span>
-          </AnimatedBorderGlow>
+          </div>
+          <span className="font-dancing text-2xl sm:text-3xl text-white font-bold tracking-wide">
+            Raghav
+          </span>
         </motion.a>
 
         {/* Desktop Navigation Links */}
-        <AnimatedBorderGlow
-          glowColor="theme"
-          containerClassName="hidden md:flex rounded-full p-[1.5px] shadow-xl shadow-blue-500/10"
-          className="p-1 rounded-full bg-slate-950/80 backdrop-blur-xl border border-white/10 flex items-center gap-1"
-        >
+        <div className="hidden md:flex rounded-full p-1 bg-slate-950/80 backdrop-blur-xl border border-white/10 items-center gap-1 shadow-xl shadow-blue-500/10">
           {NAV_ITEMS.map((item) => {
             const isActive = activeSection === item.href.replace("#", "");
             return (
@@ -124,19 +114,15 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
                 key={item.label}
                 href={item.href}
                 onClick={(e) => handleNavClick(e, item.href)}
-                onMouseEnter={() => setCursorMode("pointer")}
-                onMouseLeave={() => setCursorMode("default")}
                 className="relative group transition-all duration-300 focus:outline-none cursor-pointer"
               >
                 {isActive ? (
-                  <AnimatedBorderGlow
-                    glowColor="theme"
-                    containerClassName="rounded-full p-[1.5px] shadow-md shadow-cyan-500/20"
-                    style={{ background: `linear-gradient(135deg, ${currentPreset.colors.accent}, ${currentPreset.colors.primary})` }}
+                  <div
+                    style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)" }}
                     className="px-4 py-1.5 rounded-full text-white font-bold text-xs flex items-center justify-center shadow-lg"
                   >
                     <span>{item.label}</span>
-                  </AnimatedBorderGlow>
+                  </div>
                 ) : (
                   <div className="px-4 py-1.5 rounded-full text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-all">
                     <span>{item.label}</span>
@@ -145,34 +131,15 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
               </a>
             );
           })}
-        </AnimatedBorderGlow>
+        </div>
 
         {/* Header Right Actions */}
         <div className="flex items-center gap-2 sm:gap-3">
-
-          {/* Custom Cursor Toggle */}
-          <button
-            suppressHydrationWarning
-            onClick={toggleCursor}
-            onMouseEnter={() => setCursorMode("pointer")}
-            onMouseLeave={() => setCursorMode("default")}
-            title={cursorEnabled ? "Disable Custom Cursor" : "Enable Custom Cursor"}
-            className={`hidden sm:flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${cursorEnabled
-                ? "border-blue-500/40 bg-blue-500/10 text-blue-400"
-                : "border-white/10 bg-slate-900/60 text-slate-400 light:border-slate-300 light:bg-slate-100 light:text-slate-600"
-              }`}
-          >
-            <MousePointer className="h-3.5 w-3.5" />
-          </button>
-
-          {/* Theme Toggle */}
-          <ThemeToggle />
-
           {/* Hire Me CTA Button */}
           <GlowBorderButton
             as="a"
             href="#contact"
-            onClick={(e: React.MouseEvent<HTMLAnchorElement>) => handleNavClick(e, "#contact")}
+            onClick={(e) => handleNavClick(e, "#contact")}
             glowColor="theme"
             className="hidden md:inline-flex"
             innerClassName="px-4 py-2 text-xs font-semibold"
@@ -212,14 +179,12 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
                     className="block w-full text-left focus:outline-none cursor-pointer select-none"
                   >
                     {isActive ? (
-                      <AnimatedBorderGlow
-                        glowColor="theme"
-                        containerClassName="rounded-xl p-[1.5px] my-1 pointer-events-none"
-                        style={{ background: `linear-gradient(135deg, ${currentPreset.colors.accent}, ${currentPreset.colors.primary})` }}
-                        className="w-full px-4 py-3 rounded-[calc(0.75rem-1.5px)] text-white font-bold text-base flex items-center justify-between shadow-md"
+                      <div
+                        style={{ background: "linear-gradient(135deg, #06b6d4, #3b82f6)" }}
+                        className="w-full px-4 py-3 rounded-xl text-white font-bold text-base flex items-center justify-between shadow-md my-1"
                       >
                         <span>{item.label}</span>
-                      </AnimatedBorderGlow>
+                      </div>
                     ) : (
                       <div className="pointer-events-none block rounded-xl px-4 py-3 text-base font-semibold text-slate-300 hover:bg-white/5 hover:text-white transition-colors">
                         <span>{item.label}</span>
@@ -234,7 +199,7 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
                   as="a"
                   href="#contact"
                   glowColor="theme"
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => handleNavClick(e, "#contact")}
+                  onClick={(e) => handleNavClick(e, "#contact")}
                   className="w-full"
                   innerClassName="w-full py-3.5 justify-center text-sm font-bold"
                 >
