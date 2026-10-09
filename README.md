@@ -14,12 +14,9 @@ This portfolio showcases production-grade web applications, interactive canvas m
 
 ## ✨ Features & Highlights
 
-- **🚀 60 FPS High Performance**: Component memoization (`React.memo`), GPU-accelerated canvas particles & dynamic lazy loading.
-- **🎨 Theme Preset Switcher**: Live theme switching (**Modern Dark**, **Tokyo Night**, **Cyberpunk**, **Dracula**) with dynamic glowing borders.
 - **🤖 AI Career Assistant**: Embedded AI Chatbot trained on work experience, technical stack, projects & contact info.
 - **💻 Code Playground & Terminal**: Interactive code previewer and mini terminal for exploring technical samples.
 - **📜 PDF Resume Modal**: Embedded interactive PDF resume viewer with instant download controls.
-- **💎 Micro-Interactions**: Magnetic cursor, glowing border buttons, 3D tilt cards & sliding Framer Motion navbar indicator.
 
 ---
 

@@ -2,7 +2,7 @@
 
 import { memo, useRef } from "react";
 import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
-import { ArrowUpRight, Code2, Terminal, Laptop } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { PERSONAL_INFO } from "@/src/data/portfolio";
 import { ScrollReveal } from "@/src/components/animations/ScrollReveal";
 import { SpotlightCard } from "@/src/components/reactbits/SpotlightCard";
@@ -22,12 +22,12 @@ function RevealWord({
   progress: MotionValue<number>;
   range: [number, number];
 }) {
-  const opacity = useTransform(progress, range, [0.18, 1]);
-  const y = useTransform(progress, range, [4, 0]);
+  const opacity = useTransform(progress, range, [0.35, 1]);
+  const y = useTransform(progress, range, [3, 0]);
   return (
     <motion.span
       style={{ opacity, y }}
-      className="inline-block mr-[0.28em] font-normal transition-colors text-white"
+      className="inline-block mr-[0.28em] font-normal transition-colors text-slate-200"
     >
       {word}
     </motion.span>
@@ -72,69 +72,80 @@ function AboutComponent({ onOpenResume }: AboutProps) {
     <section
       id="about"
       ref={sectionRef}
-      className="relative w-full py-24 sm:py-32 overflow-hidden"
+      className="relative w-full py-24 sm:py-32 overflow-hidden scroll-mt-20"
     >
-      <div className="relative z-10 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pb-20">
-        <ScrollReveal>
-          <SpotlightCard className="w-full p-8 sm:p-12 border border-white/10 bg-white/5 rounded-3xl shadow-2xl backdrop-blur-md">
-            <div className="flex flex-col gap-8 md:flex-row md:items-start md:gap-16">
-              
-              {/* Left side: Heading and Highlights */}
-              <div className="flex-1 space-y-6">
-                <div className="space-y-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/10 px-3.5 py-1 text-xs font-semibold tracking-wider text-cyan-400 border border-cyan-500/20 uppercase shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
-                    ABOUT ME
-                  </span>
-                  <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight pt-2">
-                    <ShinyText>Designing & Building with Purpose.</ShinyText>
-                  </h3>
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Section Header (matching Skills & Projects) */}
+        <ScrollReveal className="text-center mb-16">
+          <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-blue-400 border border-blue-500/20 uppercase">
+            Engineering Identity
+          </span>
+          <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-5xl">
+            <ShinyText>A Little About Me</ShinyText>
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+            {PERSONAL_INFO.tagline}
+          </p>
+        </ScrollReveal>
+
+        {/* Main Bio Card (Matches reference design) */}
+        <div className="mx-auto max-w-5xl pb-16">
+          <ScrollReveal>
+            <SpotlightCard className="w-full p-8 sm:p-12 border border-[#162544] bg-[#070e22]/90 rounded-3xl shadow-[0_0_50px_rgba(2,6,23,0.8)] backdrop-blur-xl relative overflow-hidden">
+              {/* Subtle radial ambient glow inside card */}
+              <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+
+              <div className="relative z-10 space-y-6">
+                {/* Eyebrow tag */}
+                <div className="flex items-center gap-2 font-mono text-xs sm:text-sm font-semibold tracking-wider text-cyan-400 uppercase">
+                  <span className="text-cyan-400 font-bold">&lt;&gt;</span>
+                  <span>THE BACKGROUND</span>
                 </div>
 
-                <div className="flex flex-wrap gap-2 pt-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-300 border border-cyan-500/25 shadow-sm backdrop-blur-md">
-                    <Code2 className="w-3.5 h-3.5 text-cyan-400" />
-                    Frontend Architecture
+                {/* Title */}
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
+                  Who I am.
+                </h2>
+
+                {/* Bio paragraphs */}
+                <div className="space-y-5 pt-1">
+                  <RevealTextOnScroll
+                    text={PERSONAL_INFO.bio}
+                    progress={scrollYProgress}
+                    range={[0.1, 0.35]}
+                    className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed"
+                  />
+
+                  <RevealTextOnScroll
+                    text="When I'm not writing code, you can find me exploring new technologies, experimenting with modern UI patterns, optimizing frontend performance, or building full-stack integrations with Node.js, Express.js, and MongoDB."
+                    progress={scrollYProgress}
+                    range={[0.25, 0.5]}
+                    className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed"
+                  />
+                </div>
+
+                {/* Divider */}
+                <div className="w-full h-px bg-slate-800/80 my-7" />
+
+                {/* Bottom skill pills */}
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <span className="inline-flex items-center rounded-full bg-blue-950/40 px-4 py-1.5 text-xs sm:text-sm font-medium text-blue-400 border border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-blue-400/70 transition-colors">
+                    Full-Stack Architecture
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-3 py-1 text-xs font-medium text-rose-300 border border-rose-500/25 shadow-sm backdrop-blur-md">
-                    <Laptop className="w-3.5 h-3.5 text-rose-400" />
-                    Interactive 3D UI
+                  <span className="inline-flex items-center rounded-full bg-indigo-950/40 px-4 py-1.5 text-xs sm:text-sm font-medium text-indigo-300 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)] hover:border-indigo-400/70 transition-colors">
+                    Generative AI Tooling
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 px-3 py-1 text-xs font-medium text-blue-300 border border-blue-500/25 shadow-sm backdrop-blur-md">
-                    <Terminal className="w-3.5 h-3.5 text-blue-400" />
-                    React & Next.js
+                  <span className="inline-flex items-center rounded-full bg-fuchsia-950/40 px-4 py-1.5 text-xs sm:text-sm font-medium text-fuchsia-300 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.15)] hover:border-fuchsia-400/70 transition-colors">
+                    Core Web Vitals Optimization
                   </span>
                 </div>
               </div>
+            </SpotlightCard>
+          </ScrollReveal>
+        </div>
 
-              {/* Right side: Bio text and Actions */}
-              <div className="flex-1 space-y-8">
-                <div className="space-y-6">
-                  <div className="relative">
-                    <RevealTextOnScroll
-                      text={PERSONAL_INFO.bio}
-                      progress={scrollYProgress}
-                      range={[0.1, 0.4]}
-                      className="text-base sm:text-lg font-normal leading-relaxed text-slate-200"
-                    />
-                  </div>
-
-                  <div className="relative">
-                    <RevealTextOnScroll
-                      text="When I'm not writing code, I love exploring cutting-edge web motion patterns, optimizing frontend performance, architecting scalable component libraries, and creating immersive 3D web experiences."
-                      progress={scrollYProgress}
-                      range={[0.3, 0.6]}
-                      className="text-sm sm:text-base text-slate-300/90 font-light leading-relaxed"
-                    />
-                  </div>
-                </div>
-               </div>
-            </div>
-          </SpotlightCard>
-        </ScrollReveal>
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* 4 Professional Cards */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {HIGHLIGHTS.map((item, idx) => {
             const Icon = item.icon;
