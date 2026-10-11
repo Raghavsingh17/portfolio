@@ -26,14 +26,25 @@ import {
   generateLocalResponse,
   isConnectIntent,
 } from "@/src/utils/chatHelpers";
+import {
+  getOrCreateVisitorId,
+  getActiveSessionId,
+  setActiveSessionId,
+  startNewSessionId,
+  clearCurrentSession,
+  cacheMessages,
+  getCachedMessages,
+} from "@/src/utils/sessionManager";
+import { chatApi, getBackendUrl } from "@/src/lib/api";
 
 type Message = ChatMessage;
 
 interface ChatConnectCardProps {
+  sessionId?: string | null;
   onSent?: (name: string, email: string) => void;
 }
 
-function ChatConnectCard({ onSent }: ChatConnectCardProps) {
+function ChatConnectCard({ sessionId, onSent }: ChatConnectCardProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -61,8 +72,8 @@ function ChatConnectCard({ onSent }: ChatConnectCardProps) {
     setIsSubmitting(true);
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
-      const res = await fetch(`${backendUrl}/api/contact`, {
+      const activeSession = sessionId || getActiveSessionId();
+      const res = await fetch(`${getBackendUrl()}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -70,17 +81,25 @@ function ChatConnectCard({ onSent }: ChatConnectCardProps) {
           email: trimmedEmail,
           message: trimmedMsg,
           source: "chatbot",
+          sessionId: activeSession,
         }),
       });
 
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.success) {
         setIsSuccess(true);
+        // Also update session visitor profile in backend
+        if (activeSession) {
+          chatApi.updateVisitor(activeSession, {
+            name: trimmedName,
+            email: trimmedEmail,
+          }).catch(() => {});
+        }
         if (onSent) {
           onSent(trimmedName, trimmedEmail);
         }
       } else {
-        setErrorMsg(data.error || "Failed to deliver. Please try again.");
+        setErrorMsg(data.error || data.message || "Failed to deliver. Please try again.");
       }
     } catch {
       setErrorMsg("Network error. Please try again shortly.");
@@ -188,27 +207,71 @@ interface AIChatWidgetProps {
   isResumeOpen?: boolean;
 }
 
+const DEFAULT_WELCOME_MSG: Message = {
+  id: "welcome-1",
+  sender: "ai",
+  text: `👋 Hi! I'm **Raghav's AI Assistant**.\n\nI can answer any questions about Raghav's **2.5+ years of experience**, full technical skill matrix, education, projects, or how to hire him. How can I help you today?`,
+  timestamp: getFormattedTime(),
+  suggestions: QUICK_PROMPTS,
+};
+
 export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return getActiveSessionId() || startNewSessionId();
+    }
+    return null;
+  });
 
   // Derive chat window open state (automatically closed if resume modal is active)
   const isChatOpen = isOpen && !isResumeOpen;
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "welcome-1",
-      sender: "ai",
-      text: `👋 Hi! I'm **Raghav's AI Assistant**.\n\nI can answer any questions about Raghav's **2.5+ years of experience**, full technical skill matrix, education, projects, or how to hire him. How can I help you today?`,
-      timestamp: getFormattedTime(),
-      suggestions: QUICK_PROMPTS,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== "undefined") {
+      const activeId = getActiveSessionId();
+      if (activeId) {
+        const cached = getCachedMessages(activeId);
+        if (cached && cached.length > 0) {
+          return cached as Message[];
+        }
+      }
+    }
+    return [DEFAULT_WELCOME_MSG];
+  });
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Sync latest conversation history from backend asynchronously
+  useEffect(() => {
+    const activeId = sessionId || getActiveSessionId();
+    if (!activeId) return;
+
+    chatApi.getSessionHistory(activeId).then((res) => {
+      if (res.success && res.session?.messages && res.session.messages.length > 0) {
+        const restoredMessages: Message[] = res.session.messages.map(
+          (m: { id?: string; sender: "user" | "bot" | "system"; text: string; timestamp?: string }) => ({
+            id: m.id || createMessageId(m.sender),
+            sender: m.sender === "bot" ? "ai" : "user",
+            text: m.text,
+            timestamp: m.timestamp
+              ? new Date(m.timestamp).toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : getFormattedTime(),
+          })
+        );
+
+        setMessages(restoredMessages);
+        cacheMessages(activeId, restoredMessages);
+      }
+    });
+  }, [sessionId]);
 
   const handleToggleOpen = () => {
     setIsOpen((prev) => {
@@ -233,16 +296,22 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
 
   const handleLeadSent = (leadName: string, leadEmail: string) => {
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: createMessageId("ai"),
-          sender: "ai",
-          text: `🎉 Thank you **${leadName}**! Your message has been delivered directly to Raghav. He will review it and get back to you at \`${leadEmail}\` shortly.`,
-          timestamp: getFormattedTime(),
-          suggestions: ["View Resume (PDF)", "Technical Skills >", "Work Experience >"],
-        },
-      ]);
+      setMessages((prev) => {
+        const next = [
+          ...prev,
+          {
+            id: createMessageId("ai"),
+            sender: "ai" as const,
+            text: `🎉 Thank you **${leadName}**! Your message has been delivered directly to Raghav. He will review it and get back to you at \`${leadEmail}\` shortly.`,
+            timestamp: getFormattedTime(),
+            suggestions: ["View Resume (PDF)", "Technical Skills >", "Work Experience >"],
+          },
+        ];
+        if (sessionId) {
+          cacheMessages(sessionId, next);
+        }
+        return next;
+      });
     }, 350);
   };
 
@@ -256,6 +325,15 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
       onOpenResume();
     }
 
+    // Ensure session ID is present
+    let activeSession = sessionId || getActiveSessionId();
+    if (!activeSession) {
+      activeSession = startNewSessionId();
+      setSessionId(activeSession);
+    }
+
+    const visitorId = getOrCreateVisitorId();
+
     const userMsg: Message = {
       id: createMessageId("user"),
       sender: "user",
@@ -263,72 +341,96 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
       timestamp: getFormattedTime(),
     };
 
-    setMessages((prev) => [...prev, userMsg]);
+    setMessages((prev) => {
+      const next = [...prev, userMsg];
+      if (activeSession) cacheMessages(activeSession, next);
+      return next;
+    });
     setInput("");
     setIsTyping(true);
 
     try {
-      // Attempt API call to backend (or local API fallback)
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
-      const res = await fetch(`${backendUrl}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: messageText }),
+      // Send message to backend with active session and visitor tracking
+      const chatRes = await chatApi.sendMessage({
+        message: messageText,
+        sessionId: activeSession,
+        visitorId,
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.response) {
-          const connectIntent = isConnectIntent(messageText);
-          setTimeout(() => {
-            setMessages((prev) => [
+      if (chatRes.success && (chatRes.response || chatRes.reply)) {
+        const replyText = chatRes.response || chatRes.reply || "";
+        const confirmedSessionId = chatRes.sessionId || activeSession;
+
+        if (confirmedSessionId && confirmedSessionId !== sessionId) {
+          setActiveSessionId(confirmedSessionId);
+          setSessionId(confirmedSessionId);
+        }
+
+        const connectIntent = isConnectIntent(messageText);
+
+        setTimeout(() => {
+          setMessages((prev) => {
+            const next = [
               ...prev,
               {
                 id: createMessageId("ai"),
-                sender: "ai",
-                text: data.response,
+                sender: "ai" as const,
+                text: replyText,
                 timestamp: getFormattedTime(),
-                actionType: connectIntent ? "connect-card" : undefined,
+                actionType: connectIntent ? ("connect-card" as const) : undefined,
               },
-            ]);
-            setIsTyping(false);
-          }, 350);
-          return;
-        }
+            ];
+            cacheMessages(confirmedSessionId, next);
+            return next;
+          });
+          setIsTyping(false);
+        }, 300);
+        return;
       }
     } catch {
-      // Fallback silently to local NLP intent engine
+      // Fallback silently to client NLP engine if backend is temporarily disconnected
     }
 
-    // Local Instant Response
+    // Local Fallback Response if backend offline
     setTimeout(() => {
       const responseObj = generateLocalResponse(messageText);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: createMessageId("ai"),
-          sender: "ai",
-          text: responseObj.text,
-          timestamp: getFormattedTime(),
-          actionType: responseObj.actionType,
-          suggestions: responseObj.suggestions,
-        },
-      ]);
+      setMessages((prev) => {
+        const next = [
+          ...prev,
+          {
+            id: createMessageId("ai"),
+            sender: "ai" as const,
+            text: responseObj.text,
+            timestamp: getFormattedTime(),
+            actionType: responseObj.actionType,
+            suggestions: responseObj.suggestions,
+          },
+        ];
+        if (activeSession) cacheMessages(activeSession, next);
+        return next;
+      });
       setIsTyping(false);
-    }, 450);
+    }, 400);
   };
 
+  // Start a fresh conversation session
   const handleClearChat = () => {
-    setMessages([
-      {
-        id: createMessageId("welcome"),
-        sender: "ai",
-        text: `Chat reset! Ask me anything about Raghav's background, skills, work experience, education, or resume.`,
-        timestamp: getFormattedTime(),
-        suggestions: QUICK_PROMPTS,
-      },
-    ]);
+    clearCurrentSession();
+    const newSession = startNewSessionId();
+    setSessionId(newSession);
+
+    const resetMsg: Message = {
+      id: createMessageId("welcome"),
+      sender: "ai",
+      text: `Chat reset! Started a new conversation session.\n\nAsk me anything about Raghav's background, skills, work experience, education, or resume!`,
+      timestamp: getFormattedTime(),
+      suggestions: QUICK_PROMPTS,
+    };
+
+    setMessages([resetMsg]);
+    cacheMessages(newSession, [resetMsg]);
   };
+
 
   // Rich Formatting for bolding, glowing skill badges, and markdown links
   const formatMessage = (content: string) => {
@@ -512,7 +614,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                     {/* Interactive Connect Form Card */}
                     {msg.actionType === "connect-card" && (
                       <div className="mt-3 pt-2 border-t border-white/10">
-                        <ChatConnectCard onSent={handleLeadSent} />
+                        <ChatConnectCard sessionId={sessionId} onSent={handleLeadSent} />
                       </div>
                     )}
                   </div>

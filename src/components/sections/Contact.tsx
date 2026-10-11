@@ -40,10 +40,19 @@ function ContactComponent() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "";
+      const activeSession = typeof window !== "undefined"
+        ? (sessionStorage.getItem("raghav_portfolio_chat_session_id") || localStorage.getItem("raghav_portfolio_chat_session_id"))
+        : null;
+
+      const payload = {
+        ...formData,
+        ...(activeSession ? { sessionId: activeSession } : {}),
+      };
+
       const response = await fetch(`${backendUrl}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
