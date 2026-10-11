@@ -3,7 +3,18 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Lock, Mail, ShieldAlert, ArrowRight, Sparkles, KeyRound, User, Key, CheckCircle2 } from "lucide-react";
+import {
+  Lock,
+  Mail,
+  ShieldAlert,
+  ArrowRight,
+  ArrowLeft,
+  Sparkles,
+  KeyRound,
+  User,
+  Key,
+  CheckCircle2,
+} from "lucide-react";
 import Link from "next/link";
 import { adminApi } from "@/src/lib/api";
 
@@ -22,11 +33,22 @@ export default function AdminLoginPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
+  const [isRegistrationAllowed, setIsRegistrationAllowed] = useState(false);
+
   useEffect(() => {
-    // If already logged in, redirect to dashboard
-    if (adminApi.isLoggedIn()) {
-      router.push("/dashboard");
-    }
+    // Check session with HttpOnly cookie
+    adminApi.getMe().then((meRes) => {
+      if (meRes.success) {
+        router.push("/dashboard");
+      }
+    });
+
+    // Check backend setup status
+    adminApi.getSetupStatus().then((status) => {
+      if (status.registrationEnabled) {
+        setIsRegistrationAllowed(true);
+      }
+    });
   }, [router]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -45,7 +67,7 @@ export default function AdminLoginPage() {
       if (res.success) {
         router.push("/dashboard");
       } else {
-        setErrorMsg(res.error || "Invalid admin credentials. Please try again.");
+        setErrorMsg(res.error || res.message || "Invalid admin credentials. Please try again.");
       }
     } catch {
       setErrorMsg("Failed to connect to backend server.");
@@ -61,8 +83,10 @@ export default function AdminLoginPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setErrorMsg("Password must be at least 6 characters long.");
+    if (password.length < 8) {
+      setErrorMsg(
+        "Password must be at least 8 characters long with uppercase, lowercase, number & special character (@$!%*?&)."
+      );
       return;
     }
 
@@ -89,7 +113,7 @@ export default function AdminLoginPage() {
           router.push("/dashboard");
         }, 1200);
       } else {
-        setErrorMsg(res.error || "Registration failed. Invalid Admin Security Key.");
+        setErrorMsg(res.error || res.message || "Registration failed. Please verify your inputs.");
       }
     } catch {
       setErrorMsg("Failed to connect to backend server.");
@@ -131,39 +155,41 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex items-center justify-between p-1 bg-slate-950 rounded-2xl border border-white/10 mb-6">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("login");
-              setErrorMsg("");
-              setSuccessMsg("");
-            }}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "login"
-                ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Admin Login
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("register");
-              setErrorMsg("");
-              setSuccessMsg("");
-            }}
-            className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === "register"
-                ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            Register Admin
-          </button>
-        </div>
+        {/* Tab Switcher (Visible only during authorized initial setup) */}
+        {isRegistrationAllowed && (
+          <div className="flex items-center justify-between p-1 bg-slate-950 rounded-2xl border border-white/10 mb-6">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("login");
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "login"
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Admin Login
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("register");
+                setErrorMsg("");
+                setSuccessMsg("");
+              }}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTab === "register"
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
+                  : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Initial Setup
+            </button>
+          </div>
+        )}
 
         {/* Alerts */}
         {errorMsg && (
@@ -292,7 +318,7 @@ export default function AdminLoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Min 6 chars"
+                    placeholder="Min 8 chars"
                     className="w-full bg-slate-950/90 border border-white/10 focus:border-cyan-500 rounded-2xl pl-8 pr-3 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-all"
                   />
                 </div>
@@ -360,9 +386,10 @@ export default function AdminLoginPage() {
         <div className="mt-6 pt-5 border-t border-white/10 text-center">
           <Link
             href="/"
-            className="text-xs text-slate-400 hover:text-cyan-400 transition-colors inline-flex items-center gap-1 font-medium"
+            className="text-xs text-slate-400 hover:text-cyan-400 transition-colors inline-flex items-center gap-1.5 font-medium"
           >
-            ← Return to Main Portfolio
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Return to Main Portfolio</span>
           </Link>
         </div>
       </motion.div>
