@@ -269,6 +269,9 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
 
         setMessages(restoredMessages);
         cacheMessages(activeId, restoredMessages);
+      } else if (res.success && !res.session) {
+        // Clear stale session ID so it doesn't query dead sessions on future reloads
+        clearCurrentSession();
       }
     });
   }, [sessionId]);
