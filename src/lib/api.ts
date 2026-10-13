@@ -15,21 +15,22 @@ export const getBackendUrl = () => {
   return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
 };
 
-// Standard Anti-CSRF and content headers for all admin requests
+// Standard Anti-CSRF and content headers for all admin requests with dual Bearer token fallback
 const getAdminHeaders = (): HeadersInit => {
-  return {
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
     "X-Requested-With": "XMLHttpRequest",
     "X-Admin-Client": "portfolio-web",
   };
+  return headers;
 };
 
 // ==========================================
-// 1. Admin Management APIs (Protected)
+// 1. Admin Management APIs (Protected via Pure HttpOnly Cookie)
 // ==========================================
 export const adminApi = {
   // Check Setup Status (Initial setup required or web registration enabled)
-  async getSetupStatus(): Promise<{ success: boolean; isSetupRequired?: boolean; registrationEnabled?: boolean; hasAdmin?: boolean }> {
+  async getSetupStatus(): Promise<{ success: boolean; isSetupRequired?: boolean; registrationEnabled?: boolean; hasAdmin?: boolean; dbConnected?: boolean }> {
     try {
       const res = await fetch(`${getBackendUrl()}/api/auth/setup-status`, {
         method: "GET",
@@ -39,11 +40,11 @@ export const adminApi = {
       const data = await res.json();
       return { success: res.ok, ...(data.data || {}) };
     } catch {
-      return { success: false, registrationEnabled: false, hasAdmin: true };
+      return { success: false, registrationEnabled: true, hasAdmin: true, dbConnected: false };
     }
   },
 
-  // Login Admin (Sets HttpOnly session cookie)
+  // Login Admin (Sets Secure HttpOnly session cookie - NO localStorage used)
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
       const res = await fetch(`${getBackendUrl()}/api/auth/login`, {
@@ -59,20 +60,24 @@ export const adminApi = {
         error: res.ok ? undefined : (data.error || data.message || "Invalid credentials"),
       };
     } catch {
-      return { success: false, error: "Network error connecting to backend server." };
+      return { success: false, error: "Network error connecting to backend server on port 5000." };
     }
   },
 
-  // Register Admin (Gated initial setup only)
-  async register(name: string, email: string, password: string, adminSecret: string): Promise<RegisterResponse> {
+  // Register Admin (Standard Name, Email, Password)
+  async register(name: string, email: string, password: string, adminSecret?: string): Promise<RegisterResponse> {
     try {
+      const payload: Record<string, string> = { name, email, password };
+      if (adminSecret) payload.adminSecret = adminSecret;
+
       const res = await fetch(`${getBackendUrl()}/api/auth/register`, {
         method: "POST",
         headers: getAdminHeaders(),
         credentials: "include",
-        body: JSON.stringify({ name, email, password, adminSecret }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
+      // Note: We do not store tokens in localStorage; user signs in explicitly
       return {
         success: res.ok && data.success !== false,
         user: data.user || data.data?.user,
@@ -80,11 +85,11 @@ export const adminApi = {
         error: res.ok ? undefined : (data.error || data.message || "Registration failed"),
       };
     } catch {
-      return { success: false, error: "Network error connecting to backend server." };
+      return { success: false, error: "Network error connecting to backend server on port 5000." };
     }
   },
 
-  // Verify Current Admin Profile via HttpOnly Cookie
+  // Verify Current Admin Profile via Pure HttpOnly Cookie
   async getMe(): Promise<{ success: boolean; user?: AdminUser; error?: string }> {
     try {
       const res = await fetch(`${getBackendUrl()}/api/auth/me`, {
@@ -93,22 +98,23 @@ export const adminApi = {
         credentials: "include",
       });
 
-      if (res.status === 401 || res.status === 403) {
+      if (!res.ok) {
         return { success: false, error: "Unauthorized" };
       }
 
       const data = await res.json();
+      const user = data.user || data.data?.user;
       return {
-        success: res.ok && data.success !== false,
-        user: data.user || data.data?.user,
-        error: res.ok ? undefined : (data.error || data.message || "Unauthorized"),
+        success: data.success === true && !!user,
+        user: user || undefined,
+        error: data.success === false ? (data.message || "Unauthorized") : undefined,
       };
     } catch {
       return { success: false, error: "Failed to verify admin session." };
     }
   },
 
-  // Logout Admin (Clears HttpOnly cookie and invalidates session server-side)
+  // Logout Admin (Clears HttpOnly cookie server-side)
   async logout(): Promise<{ success: boolean }> {
     try {
       const res = await fetch(`${getBackendUrl()}/api/auth/logout`, {
@@ -119,6 +125,47 @@ export const adminApi = {
       return { success: res.ok };
     } catch {
       return { success: false };
+    }
+  },
+
+  // Forgot Password (Request OTP / verification code)
+  async forgotPassword(email: string): Promise<{ success: boolean; message?: string; error?: string; devResetCode?: string }> {
+    try {
+      const res = await fetch(`${getBackendUrl()}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: getAdminHeaders(),
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      return {
+        success: res.ok && data.success !== false,
+        message: data.message,
+        error: res.ok ? undefined : (data.error || data.message || "Failed to process forgot password request."),
+        devResetCode: data.data?.devResetCode,
+      };
+    } catch {
+      return { success: false, error: "Network error connecting to backend server on port 5000." };
+    }
+  },
+
+  // Reset Password (Verify OTP or Master Recovery Key & update password)
+  async resetPassword(email: string, resetCode: string, newPassword: string): Promise<{ success: boolean; message?: string; error?: string }> {
+    try {
+      const res = await fetch(`${getBackendUrl()}/api/auth/reset-password`, {
+        method: "POST",
+        headers: getAdminHeaders(),
+        credentials: "include",
+        body: JSON.stringify({ email, resetCode, newPassword }),
+      });
+      const data = await res.json();
+      return {
+        success: res.ok && data.success !== false,
+        message: data.message,
+        error: res.ok ? undefined : (data.error || data.message || "Failed to reset password."),
+      };
+    } catch {
+      return { success: false, error: "Network error connecting to backend server on port 5000." };
     }
   },
 

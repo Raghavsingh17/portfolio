@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Bot,
@@ -23,6 +24,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
+  ArrowLeft,
   User,
   ShieldCheck,
   Sparkles,
@@ -104,6 +106,7 @@ export default function AdminDashboardPage() {
   const [errorMsg, setErrorMsg] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
   const [copiedSessionId, setCopiedSessionId] = useState<string | null>(null);
+  const [copiedEmail, setCopiedEmail] = useState<string | null>(null);
 
   // Verify Admin Session on Mount
   useEffect(() => {
@@ -430,6 +433,16 @@ export default function AdminDashboardPage() {
               </span>
             </div>
           )}
+
+          {/* Back to Live Portfolio Link */}
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-white/10 hover:border-cyan-500/40 text-slate-300 hover:text-cyan-400 text-xs font-semibold transition-all cursor-pointer shadow-sm hover:shadow-cyan-500/10"
+            title="Return to Main Portfolio"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Live Portfolio</span>
+          </Link>
 
           <button
             onClick={handleManualRefresh}
@@ -825,8 +838,13 @@ export default function AdminDashboardPage() {
                               </div>
                               {session.visitorInfo?.email ? (
                                 <a
-                                  href={`mailto:${session.visitorInfo.email}`}
+                                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                                    session.visitorInfo.email
+                                  )}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
                                   className="text-[11px] font-mono text-purple-300 hover:underline flex items-center gap-1"
+                                  title="Send email via Gmail"
                                 >
                                   <Mail className="w-2.5 h-2.5" />
                                   <span>{session.visitorInfo.email}</span>
@@ -1356,8 +1374,13 @@ export default function AdminDashboardPage() {
                         <span className="text-[10px] font-mono text-slate-400 block uppercase">Visitor Email</span>
                         {sessionDetail.visitorInfo?.email ? (
                           <a
-                            href={`mailto:${sessionDetail.visitorInfo.email}`}
+                            href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                              sessionDetail.visitorInfo.email
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="font-mono text-purple-300 hover:underline block truncate"
+                            title="Send email via Gmail"
                           >
                             {sessionDetail.visitorInfo.email}
                           </a>
@@ -1554,8 +1577,13 @@ export default function AdminDashboardPage() {
                 </div>
                 <h2 className="text-xl font-bold text-white">{selectedMessage.name}</h2>
                 <a
-                  href={`mailto:${selectedMessage.email}`}
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                    selectedMessage.email
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-xs font-mono text-cyan-400 hover:underline block"
+                  title="Send email via Gmail"
                 >
                   {selectedMessage.email}
                 </a>
@@ -1600,7 +1628,7 @@ export default function AdminDashboardPage() {
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
                 <button
                   onClick={() =>
                     handleToggleContactStatus(
@@ -1608,19 +1636,53 @@ export default function AdminDashboardPage() {
                       selectedMessage.status === "unread" ? "read" : "unread"
                     )
                   }
-                  className="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500 hover:text-white text-xs font-bold transition-all cursor-pointer"
+                  className="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500 hover:text-white text-xs font-bold transition-all cursor-pointer"
                 >
                   {selectedMessage.status === "unread" ? "Mark as Read" : "Mark as Unread"}
                 </button>
 
-                <a
-                  href={`mailto:${selectedMessage.email}?subject=Re: ${encodeURIComponent(
-                    selectedMessage.subject || "Your message on Raghav's Portfolio"
-                  )}`}
-                  className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-bold transition-all cursor-pointer"
-                >
-                  Reply via Email
-                </a>
+                <div className="flex items-center gap-2">
+                  {/* Copy Email Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedMessage.email);
+                      setCopiedEmail(selectedMessage.email);
+                      setTimeout(() => setCopiedEmail(null), 2000);
+                    }}
+                    className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                    title="Copy Email Address"
+                  >
+                    {copiedEmail === selectedMessage.email ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-emerald-400">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Copy Email</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Direct Web Gmail Compose */}
+                  <a
+                    href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+                      selectedMessage.email
+                    )}&su=${encodeURIComponent(
+                      `Re: ${selectedMessage.subject || "Your message on Raghav's Portfolio"}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold transition-all shadow-md shadow-cyan-500/20 inline-flex items-center gap-1.5 cursor-pointer"
+                    title="Open Gmail in new tab to reply"
+                  >
+                    <Mail className="w-3.5 h-3.5" />
+                    <span>Reply via Gmail</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
               </div>
             </motion.div>
           </div>
