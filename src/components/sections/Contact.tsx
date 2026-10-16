@@ -90,21 +90,26 @@ function ContactComponent() {
       <div className="relative z-10 mx-auto max-w-7xl px-3.5 sm:px-6 lg:px-8">
         {/* Section Header */}
         <ScrollReveal className="text-center">
-          <span className="rounded-full bg-blue-500/10 px-3.5 py-1.5 text-[11px] sm:text-xs font-semibold tracking-wider text-blue-400 border border-blue-500/20 uppercase">
-            Get In Touch
-          </span>
-          <h2 className="mt-3 sm:mt-4 text-2xl font-extrabold text-white light:text-slate-900 sm:text-5xl tracking-tight">
+          <div className="inline-flex items-center justify-center gap-3">
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-blue-500" />
+            <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-cyan-300 border border-blue-500/30 uppercase shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+              Get In Touch
+            </span>
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-l from-transparent via-cyan-500/50 to-blue-500" />
+          </div>
+          <h2 className="mt-3 text-2xl xs:text-3xl font-extrabold text-white light:text-slate-900 sm:text-5xl tracking-tight">
             <ShinyText>Let&apos;s build something extraordinary</ShinyText>.
           </h2>
-          <p className="mx-auto mt-3 sm:mt-4 max-w-2xl text-xs sm:text-base text-slate-400 light:text-slate-600 px-2">
+          <p className="mx-auto mt-2.5 max-w-2xl text-xs sm:text-base text-slate-300 light:text-slate-400 font-medium px-2">
             Have a project in mind, a question, or an opportunity? Feel free to reach out directly.
           </p>
+          <div className="mt-5 mx-auto w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </ScrollReveal>
 
         <div className="mt-8 sm:mt-16 grid gap-6 sm:gap-10 lg:grid-cols-12">
           {/* Contact Details & Copy Card */}
-          <ScrollReveal direction="left" className="lg:col-span-5 flex flex-col justify-between space-y-6">
-            <SpotlightCard className="h-full flex flex-col justify-between p-4 sm:p-8 dark:bg-slate-950/80 light:bg-white/80">
+          <ScrollReveal direction="up" className="lg:col-span-5 flex flex-col justify-between space-y-6">
+            <SpotlightCard className="h-full flex flex-col justify-between p-5 sm:p-8 dark:bg-slate-950/80 light:bg-white/80">
                 <div>
                   <div className="flex items-center gap-2 text-blue-400 font-mono text-xs uppercase tracking-widest mb-4 sm:mb-6">
                     <MessageSquare className="h-4 w-4 shrink-0" />
@@ -222,8 +227,8 @@ function ContactComponent() {
           </ScrollReveal>
 
           {/* Contact Form Card */}
-          <ScrollReveal direction="right" className="lg:col-span-7">
-            <SpotlightCard className="h-full p-4 sm:p-8 dark:bg-slate-950/95 light:bg-white/95 flex flex-col justify-between">
+          <ScrollReveal direction="up" delay={0.15} className="lg:col-span-7">
+            <SpotlightCard className="h-full p-5 sm:p-8 dark:bg-slate-950/95 light:bg-white/95 flex flex-col justify-between">
                 <AnimatePresence mode="wait">
                   {isSubmitted ? (
                     <motion.div
@@ -273,7 +278,7 @@ function ContactComponent() {
                             placeholder="e.g. Alex Johnson"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
+                            className="w-full rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-base sm:text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
                           />
                         </div>
 
@@ -289,7 +294,7 @@ function ContactComponent() {
                             placeholder="e.g. alex@example.com"
                             value={formData.email}
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
+                            className="w-full rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-base sm:text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
                           />
                         </div>
 
@@ -305,7 +310,7 @@ function ContactComponent() {
                             placeholder="e.g., Custom Web App / Freelance Project"
                             value={formData.subject}
                             onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                            className="w-full rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
+                            className="w-full rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-base sm:text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
                           />
                         </div>
 
@@ -321,7 +326,7 @@ function ContactComponent() {
                             placeholder="Tell me about your project scope, timeline, budget, or objectives..."
                             value={formData.message}
                             onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                            className="w-full min-h-[110px] sm:min-h-[150px] rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
+                            className="w-full min-h-[110px] sm:min-h-[150px] rounded-xl sm:rounded-2xl border border-white/10 bg-slate-900/80 px-3.5 py-2.5 sm:px-4 sm:py-3 text-base sm:text-sm text-white placeholder-slate-400 outline-none transition-colors focus:border-blue-500/60 light:border-slate-300 light:bg-slate-100 light:text-slate-900"
                           />
                         </div>
                       </div>

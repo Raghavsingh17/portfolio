@@ -116,15 +116,20 @@ function SkillsComponent() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <ScrollReveal className="text-center">
-          <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-blue-400 border border-blue-500/20 uppercase">
-            Technical Stack
-          </span>
-          <h2 className="mt-4 text-3xl font-extrabold text-white light:text-slate-900 sm:text-5xl">
+          <div className="inline-flex items-center justify-center gap-3">
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-blue-500" />
+            <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-cyan-300 border border-blue-500/30 uppercase shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+              Technical Stack
+            </span>
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-l from-transparent via-cyan-500/50 to-blue-500" />
+          </div>
+          <h2 className="mt-3 text-3xl font-extrabold text-white light:text-slate-900 sm:text-5xl">
             <ShinyText>Skills & Expertise</ShinyText>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-slate-400 light:text-slate-600">
+          <p className="mx-auto mt-2.5 max-w-2xl text-slate-300 light:text-slate-400 text-xs sm:text-base font-medium">
             High-impact single-technology stack expertise for modern web applications.
           </p>
+          <div className="mt-5 mx-auto w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </ScrollReveal>
 
         {/* 1. Main Featured Skills Grid (6 High-Impact Single-Tech Cards) */}

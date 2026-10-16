@@ -105,7 +105,7 @@ function ProjectStackCard({
         >
           {/* ── FULL IMAGE CONTAINER (50px rounded, with hover reveal) ── */}
           <div
-            className="group relative w-full h-[380px] sm:h-[460px] lg:h-[500px] overflow-hidden cursor-pointer"
+            className="group relative w-full h-[280px] sm:h-[380px] lg:h-[460px] xl:h-[500px] overflow-hidden cursor-pointer"
             style={{ borderRadius: "50px" }}
             onClick={() => onViewDetails(project)}
           >
@@ -310,27 +310,34 @@ function ProjectsComponent() {
   return (
     // CRITICAL: NO overflow-hidden on section — it kills sticky positioning
     <section id="projects" className="relative py-24 sm:py-32 scroll-mt-20">
-      {/* Ambient glows */}
-      <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-500/8 blur-[180px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-purple-500/8 blur-[160px] pointer-events-none rounded-full" />
+      {/* Ambient glows (contained in an overflow-hidden wrapper to prevent mobile horizontal scroll while preserving sticky card positioning) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-blue-500/8 blur-[180px] pointer-events-none rounded-full" />
+        <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-purple-500/8 blur-[160px] pointer-events-none rounded-full" />
+      </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Section header */}
         <div className="text-center mb-12">
-          <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-blue-400 border border-blue-500/20 uppercase">
-            Portfolio Showcase
-          </span>
-          <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-5xl">
+          <div className="inline-flex items-center justify-center gap-3">
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-blue-500" />
+            <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-cyan-300 border border-blue-500/30 uppercase shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+              Portfolio Showcase
+            </span>
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-l from-transparent via-cyan-500/50 to-blue-500" />
+          </div>
+          <h2 className="mt-3 text-3xl font-extrabold text-white sm:text-5xl">
             <ShinyText>Featured Projects</ShinyText>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-slate-400">
+          <p className="mx-auto mt-2.5 max-w-2xl text-slate-300 text-xs sm:text-base font-medium">
             Handcrafted software engineering solutions combining UI design, performance & AI integrations.
           </p>
+          <div className="mt-5 mx-auto w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </div>
 
         {/* Category filter tabs */}
         <div className="mb-16 flex justify-center">
-          <div className="rounded-2xl border border-white/10 p-1.5 bg-slate-950/80 backdrop-blur-xl flex flex-wrap justify-center gap-2 max-w-full">
+          <div className="rounded-2xl border border-white/10 p-1.5 bg-slate-950/80 backdrop-blur-xl flex flex-wrap justify-center gap-1.5 sm:gap-2 max-w-full">
             {CATEGORIES.map((category) => {
               const isActive = activeCategory === category;
               return (

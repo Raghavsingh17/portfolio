@@ -24,8 +24,8 @@ function CosmicBackgroundComponent() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Compute scroll-linked deepening factor (0 in Hero, up to 0.45 in lower sections)
-  const depthOpacity = Math.min(0.5, Math.max(0, scrollY / 1200));
+  // Subtle scroll-linked atmospheric tint (keeps Earth horizon & stars vibrant across Hero, About, and Skills)
+  const depthOpacity = Math.min(0.15, Math.max(0, (scrollY - 600) / 3000));
 
   return (
     <div

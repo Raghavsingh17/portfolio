@@ -1,190 +1,506 @@
 "use client";
 
 import { memo, useRef } from "react";
-import { motion, useScroll, useTransform, MotionValue } from "framer-motion";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useReducedMotion,
+  useMotionValue,
+} from "framer-motion";
 import { ArrowUpRight } from "lucide-react";
 import { PERSONAL_INFO } from "@/src/data/portfolio";
-import { ScrollReveal } from "@/src/components/animations/ScrollReveal";
-import { SpotlightCard } from "@/src/components/reactbits/SpotlightCard";
 import { ShinyText } from "@/src/components/animations/ShinyText";
+import { SpotlightCard } from "@/src/components/reactbits/SpotlightCard";
+import { AsciiPortrait } from "@/src/components/ascii/AsciiPortrait";
+import { ScrollReveal } from "@/src/components/animations/ScrollReveal";
 import { getAboutHighlights } from "@/src/utils/aboutHelpers";
+import aboutPortraitSrc from "@/src/assets/images/about-portrait.png";
 
 interface AboutProps {
   onOpenResume?: () => void;
 }
 
-function RevealWord({
-  word,
-  progress,
-  range,
-}: {
-  word: string;
-  progress: MotionValue<number>;
-  range: [number, number];
-}) {
-  const opacity = useTransform(progress, range, [0.35, 1]);
-  const y = useTransform(progress, range, [3, 0]);
-  return (
-    <motion.span
-      style={{ opacity, y }}
-      className="inline-block mr-[0.28em] font-normal transition-colors text-slate-200"
-    >
-      {word}
-    </motion.span>
-  );
-}
-
-function RevealTextOnScroll({
-  text,
-  className = "",
-  progress,
-  range = [0, 1],
-}: {
-  text: string;
-  className?: string;
-  progress: MotionValue<number>;
-  range?: [number, number];
-}) {
-  const words = text.split(" ");
-  const [rangeStart, rangeEnd] = range;
-  const totalRange = rangeEnd - rangeStart;
+// =========================================================================
+// ACCESSIBLE FALLBACK (REDUCED MOTION)
+// =========================================================================
+function ReducedMotionAbout({ onOpenResume }: AboutProps) {
+  const highlights = getAboutHighlights(onOpenResume);
+  const staticProgress = useMotionValue(1.0);
 
   return (
-    <p className={`flex flex-wrap leading-relaxed ${className}`}>
-      {words.map((word, i) => {
-        const start = rangeStart + (i / words.length) * totalRange;
-        const end = Math.min(rangeEnd, start + (1.2 / words.length) * totalRange);
-        return <RevealWord key={i} word={word} progress={progress} range={[start, end]} />;
-      })}
-    </p>
-  );
-}
-
-function AboutComponent({ onOpenResume }: AboutProps) {
-  const HIGHLIGHTS = getAboutHighlights(onOpenResume);
-  const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"],
-  });
-
-  return (
-    <section
-      id="about"
-      ref={sectionRef}
-      className="relative w-full py-24 sm:py-32 overflow-hidden scroll-mt-20"
-    >
-      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Section Header (matching Skills & Projects) */}
-        <ScrollReveal className="text-center mb-16">
-          <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-blue-400 border border-blue-500/20 uppercase">
-            Engineering Identity
-          </span>
-          <h2 className="mt-4 text-3xl font-extrabold text-white sm:text-5xl">
+    <section id="about-reduced" className="relative w-full py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-transparent text-slate-100">
+      <div className="max-w-6xl mx-auto space-y-12 sm:space-y-16">
+        {/* Header */}
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center gap-3">
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-blue-500" />
+            <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-cyan-300 border border-blue-500/30 uppercase shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+              Engineering Identity
+            </span>
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-l from-transparent via-cyan-500/50 to-blue-500" />
+          </div>
+          <h2 className="mt-3 text-3xl font-extrabold text-white sm:text-5xl">
             <ShinyText>A Little About Me</ShinyText>
           </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-slate-400">
-            {PERSONAL_INFO.tagline}
+          <p className="mx-auto mt-2.5 max-w-2xl text-slate-300 text-xs sm:text-base font-medium">
+            Full-stack engineer dedicated to crafting performant, pixel-perfect web experiences with modern architecture.
           </p>
-        </ScrollReveal>
-
-        {/* Main Bio Card (Matches reference design) */}
-        <div className="mx-auto max-w-5xl pb-16">
-          <ScrollReveal>
-            <SpotlightCard className="w-full p-8 sm:p-12 border border-[#162544] bg-[#070e22]/90 rounded-3xl shadow-[0_0_50px_rgba(2,6,23,0.8)] backdrop-blur-xl relative overflow-hidden">
-              {/* Subtle radial ambient glow inside card */}
-              <div className="absolute -top-24 -left-24 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
-
-              <div className="relative z-10 space-y-6">
-                {/* Eyebrow tag */}
-                <div className="flex items-center gap-2 font-mono text-xs sm:text-sm font-semibold tracking-wider text-cyan-400 uppercase">
-                  <span className="text-cyan-400 font-bold">&lt;&gt;</span>
-                  <span>THE BACKGROUND</span>
-                </div>
-
-                {/* Title */}
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
-                  Who I am.
-                </h2>
-
-                {/* Bio paragraphs */}
-                <div className="space-y-5 pt-1">
-                  <RevealTextOnScroll
-                    text={PERSONAL_INFO.bio}
-                    progress={scrollYProgress}
-                    range={[0.1, 0.35]}
-                    className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed"
-                  />
-
-                  <RevealTextOnScroll
-                    text="When I'm not writing code, you can find me exploring new technologies, experimenting with modern UI patterns, optimizing frontend performance, or building full-stack integrations with Node.js, Express.js, and MongoDB."
-                    progress={scrollYProgress}
-                    range={[0.25, 0.5]}
-                    className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed"
-                  />
-                </div>
-
-                {/* Divider */}
-                <div className="w-full h-px bg-slate-800/80 my-7" />
-
-                {/* Bottom skill pills */}
-                <div className="flex flex-wrap items-center gap-3 pt-1">
-                  <span className="inline-flex items-center rounded-full bg-blue-950/40 px-4 py-1.5 text-xs sm:text-sm font-medium text-blue-400 border border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)] hover:border-blue-400/70 transition-colors">
-                    Full-Stack Architecture
-                  </span>
-                  <span className="inline-flex items-center rounded-full bg-indigo-950/40 px-4 py-1.5 text-xs sm:text-sm font-medium text-indigo-300 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)] hover:border-indigo-400/70 transition-colors">
-                    Generative AI Tooling
-                  </span>
-                  <span className="inline-flex items-center rounded-full bg-fuchsia-950/40 px-4 py-1.5 text-xs sm:text-sm font-medium text-fuchsia-300 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.15)] hover:border-fuchsia-400/70 transition-colors">
-                    Core Web Vitals Optimization
-                  </span>
-                </div>
-              </div>
-            </SpotlightCard>
-          </ScrollReveal>
+          <div className="mt-5 mx-auto w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
         </div>
 
-        {/* 4 Professional Cards */}
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {HIGHLIGHTS.map((item, idx) => {
+        {/* Bio & ASCII (Pure typography, no card container around ASCII) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center">
+          <div className="lg:col-span-5 flex justify-center select-none pointer-events-none">
+            <AsciiPortrait
+              imageSrc={aboutPortraitSrc.src}
+              scrollProgress={staticProgress}
+              columns={48}
+              fontSize={10.5}
+            />
+          </div>
+
+          <div className="lg:col-span-7 space-y-4 sm:space-y-5">
+            <div className="flex items-center gap-2 font-mono text-xs sm:text-sm font-semibold tracking-wider text-cyan-400 uppercase">
+              <span className="text-cyan-400 font-bold">&lt;&gt;</span>
+              <span>THE BACKGROUND</span>
+            </div>
+
+            <h3 className="text-2xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
+              Who I am.
+            </h3>
+
+            <div className="space-y-3.5 text-slate-100 text-sm sm:text-base lg:text-lg leading-relaxed font-semibold text-justify [text-align:justify]">
+              <p>{PERSONAL_INFO.bio}</p>
+              <p className="text-slate-200">
+                When I&apos;m not writing code, you can find me exploring new technologies, experimenting with modern UI patterns, optimizing frontend performance, or building full-stack integrations with Node.js, Express.js, and MongoDB.
+              </p>
+            </div>
+
+            <div className="w-full h-px bg-slate-800/80 my-4 sm:my-5" />
+
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 pt-1">
+              <span className="inline-flex items-center rounded-full bg-blue-950/40 px-3.5 py-1 text-xs sm:text-sm font-medium text-blue-400 border border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                Full-Stack Architecture
+              </span>
+              <span className="inline-flex items-center rounded-full bg-indigo-950/40 px-3.5 py-1 text-xs sm:text-sm font-medium text-indigo-300 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+                Generative AI Tooling
+              </span>
+              <span className="inline-flex items-center rounded-full bg-fuchsia-950/40 px-3.5 py-1 text-xs sm:text-sm font-medium text-fuchsia-300 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
+                Core Web Vitals Optimization
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 4 Cards Grid */}
+        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {highlights.map((item) => {
             const Icon = item.icon;
             return (
-              <ScrollReveal key={item.id} delay={idx * 0.1} className="h-full">
-                <SpotlightCard
-                  onClick={item.onClick}
-                  className={`h-full flex flex-col justify-between ${
-                    item.isInteractive ? "cursor-pointer group/resumeCard" : ""
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-5">
-                      <div
-                        className={`h-12 w-12 shrink-0 rounded-2xl border border-white/10 bg-slate-950/90 flex items-center justify-center shadow-lg ${item.iconColor}`}
-                      >
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <span className="rounded-full bg-blue-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-blue-400 border border-blue-500/20">
-                        {item.badge}
-                      </span>
-                    </div>
-                    <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-1.5">
-                      <span>{item.title}</span>
-                      {item.isInteractive && (
-                        <ArrowUpRight className="h-4 w-4 text-blue-400 transition-transform group-hover/resumeCard:translate-x-0.5 group-hover/resumeCard:-translate-y-0.5" />
-                      )}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-                      {item.description}
-                    </p>
+              <SpotlightCard
+                key={item.id}
+                onClick={item.onClick}
+                className={`p-5 sm:p-6 !bg-slate-900/65 dark:!bg-slate-900/65 border ${item.borderClass} backdrop-blur-xl shadow-2xl ${
+                  item.isInteractive ? "cursor-pointer group/resumeCard" : ""
+                }`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl border ${item.iconBgClass} flex items-center justify-center ${item.iconShadowClass}`}>
+                    <Icon className={`h-5 w-5 ${item.iconColorClass}`} />
                   </div>
-                </SpotlightCard>
-              </ScrollReveal>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold border ${item.badgeClass}`}>
+                    {item.badge}
+                  </span>
+                </div>
+                <h4 className={`text-base font-bold text-white mb-2 ${item.isInteractive ? "flex items-center gap-1.5" : ""}`}>
+                  <span>{item.title}</span>
+                  {item.isInteractive && (
+                    <ArrowUpRight className="h-4 w-4 text-blue-400 transition-transform group-hover/resumeCard:translate-x-0.5 group-hover/resumeCard:-translate-y-0.5" />
+                  )}
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+                  {item.description}
+                </p>
+              </SpotlightCard>
             );
           })}
         </div>
       </div>
     </section>
+  );
+}
+
+// =========================================================================
+// MOBILE & TABLET LAYOUT (<1024px)
+// Pure floating ASCII portrait (NO CARD CONTAINER), full-width responsive
+// flow, readable bio text, polished high-impact cards.
+// =========================================================================
+function AboutMobile({ onOpenResume }: AboutProps) {
+  const highlights = getAboutHighlights(onOpenResume);
+  const staticProgress = useMotionValue(1.0);
+
+  return (
+    <section className="relative w-full py-14 sm:py-20 px-4 sm:px-6 bg-transparent text-slate-100">
+      <div className="w-full max-w-2xl mx-auto space-y-9 sm:space-y-11">
+        {/* Section Header */}
+        <ScrollReveal className="text-center">
+          <div className="inline-flex items-center justify-center gap-3">
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-blue-500" />
+            <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-cyan-300 border border-blue-500/30 uppercase shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+              Engineering Identity
+            </span>
+            <span className="inline-block w-10 sm:w-16 md:w-28 h-[1px] bg-gradient-to-l from-transparent via-cyan-500/50 to-blue-500" />
+          </div>
+          <h2 className="mt-3 text-2xl xs:text-3xl font-extrabold text-white sm:text-4xl">
+            <ShinyText>A Little About Me</ShinyText>
+          </h2>
+          <p className="mx-auto mt-2.5 max-w-xl text-slate-300 text-xs sm:text-sm leading-relaxed font-medium">
+            Full-stack engineer dedicated to crafting performant, pixel-perfect web experiences with modern architecture.
+          </p>
+          <div className="mt-4 mx-auto w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+        </ScrollReveal>
+
+        {/* PURE FLOATING ASCII PORTRAIT — NO CARD CONTAINER AROUND IT */}
+        <ScrollReveal delay={0.1} className="flex justify-center items-center py-1 overflow-hidden select-none pointer-events-none">
+          <div className="relative flex justify-center items-center">
+            {/* Subtle atmospheric ambient glow behind the characters */}
+            <div className="absolute inset-0 bg-radial from-blue-500/15 via-transparent to-transparent blur-3xl pointer-events-none" />
+            <AsciiPortrait
+              imageSrc={aboutPortraitSrc.src}
+              scrollProgress={staticProgress}
+              columns={36}
+              fontSize={8.5}
+            />
+          </div>
+        </ScrollReveal>
+
+        {/* Bio Content */}
+        <ScrollReveal delay={0.15} className="space-y-4">
+          <div className="flex items-center gap-2 font-mono text-xs font-semibold tracking-wider text-cyan-400 uppercase">
+            <span className="text-cyan-400 font-bold">&lt;&gt;</span>
+            <span>THE BACKGROUND</span>
+          </div>
+
+          <h3 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+            Who I am.
+          </h3>
+
+          <div className="space-y-3.5 text-slate-100 text-xs sm:text-sm leading-relaxed font-semibold text-justify [text-align:justify]">
+            <p>{PERSONAL_INFO.bio}</p>
+            <p className="text-slate-200">
+              When I&apos;m not writing code, you can find me exploring new technologies, experimenting with modern UI patterns, optimizing frontend performance, or building full-stack integrations with Node.js, Express.js, and MongoDB.
+            </p>
+          </div>
+
+          <div className="w-full h-px bg-slate-800/80 my-4" />
+
+          {/* Skill Pills */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            <span className="inline-flex items-center rounded-full bg-blue-950/40 px-3 py-1 text-xs font-medium text-blue-400 border border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+              Full-Stack Architecture
+            </span>
+            <span className="inline-flex items-center rounded-full bg-indigo-950/40 px-3 py-1 text-xs font-medium text-indigo-300 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+              Generative AI Tooling
+            </span>
+            <span className="inline-flex items-center rounded-full bg-fuchsia-950/40 px-3 py-1 text-xs font-medium text-fuchsia-300 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
+              Core Web Vitals Optimization
+            </span>
+          </div>
+        </ScrollReveal>
+
+        {/* 4 Cards Grid - Responsive, balanced padding, clean text */}
+        <ScrollReveal delay={0.2} className="w-full pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 w-full">
+            {highlights.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div
+                  key={item.id}
+                  onClick={item.onClick}
+                  className={`w-full p-4 sm:p-5 rounded-2xl border ${item.borderClass} ${item.hoverBorderClass} bg-[#0c1836]/90 backdrop-blur-2xl transition-all duration-300 ${item.shadowClass} ${
+                    item.isInteractive ? "cursor-pointer group/resumeCard active:scale-[0.98]" : ""
+                  } flex flex-col justify-between group hover:-translate-y-1 relative overflow-hidden`}
+                >
+                  {/* Subtle top edge gradient highlight */}
+                  <div
+                    className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent ${item.topGradientClass} to-transparent pointer-events-none`}
+                  />
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2.5">
+                      <div
+                        className={`h-9 w-9 sm:h-10 sm:w-10 rounded-xl border ${item.iconBgClass} flex items-center justify-center ${item.iconShadowClass}`}
+                      >
+                        <Icon className={`h-4.5 w-4.5 sm:h-5 sm:w-5 ${item.iconColorClass}`} />
+                      </div>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[10px] sm:text-xs font-bold border shadow-sm ${item.badgeClass}`}
+                      >
+                        {item.badge}
+                      </span>
+                    </div>
+
+                    <h4
+                      className={`text-sm sm:text-base font-bold text-white mb-1.5 tracking-tight ${
+                        item.isInteractive ? "flex items-center gap-1.5" : ""
+                      }`}
+                    >
+                      <span>{item.title}</span>
+                      {item.isInteractive && (
+                        <ArrowUpRight className="h-4 w-4 text-blue-400 transition-transform group-hover/resumeCard:translate-x-1 group-hover/resumeCard:-translate-y-1" />
+                      )}
+                    </h4>
+
+                    <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed font-normal">
+                      {item.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollReveal>
+      </div>
+    </section>
+  );
+}
+
+// =========================================================================
+// DESKTOP PINNED INTERACTIVE SCROLL LAYOUT (>=1024px)
+// Sticky 320vh stage choreography with pure floating ASCII portrait (NO CARD)
+// =========================================================================
+function AboutDesktop({ onOpenResume }: AboutProps) {
+  const highlights = getAboutHighlights(onOpenResume);
+  const containerRef = useRef<HTMLElement>(null);
+
+  // Master scroll progress across entire pinned About sequence
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
+  const headerOpacity = useTransform(
+    scrollYProgress,
+    [0.00, 0.04, 1.00],
+    [0.4, 1.0, 1.0]
+  );
+
+  const asciiScale = useTransform(
+    scrollYProgress,
+    [0.00, 0.20, 1.00],
+    [0.85, 1.0, 1.0]
+  );
+
+  const desktopAsciiOpacity = useTransform(
+    scrollYProgress,
+    [0.00, 0.08, 1.00],
+    [0.4, 1.0, 1.0]
+  );
+
+  // Center (0vw) -> Left (-25vw) -> Sweep to Right (+25vw)
+  const desktopAsciiX = useTransform(
+    scrollYProgress,
+    [0.00, 0.28, 0.46, 0.60, 0.78, 1.00],
+    ["0vw", "0vw", "-25vw", "-25vw", "25vw", "25vw"]
+  );
+
+  // Stage 2: Bio Reveal on Right Side
+  const bioOpacity = useTransform(
+    scrollYProgress,
+    [0.00, 0.28, 0.40, 0.58, 0.68, 1.00],
+    [0, 0, 1, 1, 0, 0]
+  );
+
+  const bioY = useTransform(
+    scrollYProgress,
+    [0.00, 0.28, 0.40, 0.58, 0.68, 1.00],
+    [25, 25, 0, 0, -20, -20]
+  );
+
+  // Stage 3: 4 Cards Reveal on Left Side
+  const cardsOpacity = useTransform(
+    scrollYProgress,
+    [0.00, 0.58, 0.72, 1.00],
+    [0, 0, 1, 1]
+  );
+
+  const cardsY = useTransform(
+    scrollYProgress,
+    [0.00, 0.58, 0.72, 1.00],
+    [30, 30, 0, 0]
+  );
+
+  return (
+    <section
+      ref={containerRef}
+      className="relative w-full bg-transparent text-slate-100"
+      style={{ height: "320vh" }}
+    >
+      {/* Pinned Viewport Container */}
+      <div className="sticky top-0 h-screen w-full overflow-hidden flex flex-col items-center justify-between pt-16 pb-4 px-6 lg:px-8">
+        {/* Section Header */}
+        <motion.div
+          style={{ opacity: headerOpacity }}
+          className="w-full text-center z-30 shrink-0 pointer-events-none select-none mb-2"
+        >
+          <div className="inline-flex items-center justify-center gap-3">
+            <span className="inline-block w-12 lg:w-28 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-blue-500" />
+            <span className="rounded-full bg-blue-500/10 px-4 py-1.5 text-xs font-semibold tracking-wider text-cyan-300 border border-blue-500/30 uppercase shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+              Engineering Identity
+            </span>
+            <span className="inline-block w-12 lg:w-28 h-[1px] bg-gradient-to-l from-transparent via-cyan-500/50 to-blue-500" />
+          </div>
+          <h2 className="mt-1 text-4xl lg:text-5xl font-extrabold text-white">
+            <ShinyText>A Little About Me</ShinyText>
+          </h2>
+          <p className="mx-auto mt-1 max-w-2xl text-slate-300 text-sm font-medium">
+            Full-stack engineer dedicated to crafting performant, pixel-perfect web experiences with modern architecture.
+          </p>
+          <div className="mt-3 mx-auto w-24 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+        </motion.div>
+
+        {/* Central Choreography Stage */}
+        <div className="relative w-full max-w-7xl flex-1 flex items-center justify-center my-auto">
+          {/* Pure ASCII Portrait — NO CARD CONTAINER AROUND IT */}
+          <motion.div
+            style={{
+              x: desktopAsciiX,
+              y: 0,
+              scale: asciiScale,
+              opacity: desktopAsciiOpacity,
+            }}
+            className="absolute z-10 flex flex-col items-center justify-center will-change-transform top-1/2 -translate-y-1/2 select-none pointer-events-none"
+          >
+            <AsciiPortrait
+              imageSrc={aboutPortraitSrc.src}
+              scrollProgress={scrollYProgress}
+              columns={54}
+              fontSize={12}
+            />
+          </motion.div>
+
+          {/* Stage 2: Bio Content on Right Side */}
+          <motion.div
+            style={{
+              opacity: bioOpacity,
+              y: bioY,
+            }}
+            className="absolute z-20 left-[52%] w-[46%] max-w-xl top-1/2 -translate-y-1/2 flex flex-col justify-center space-y-3.5"
+          >
+            <div className="flex items-center gap-2 font-mono text-xs font-semibold tracking-wider text-cyan-400 uppercase">
+              <span className="text-cyan-400 font-bold">&lt;&gt;</span>
+              <span>THE BACKGROUND</span>
+            </div>
+
+            <h3 className="text-4xl lg:text-5xl font-bold text-white tracking-tight">
+              Who I am.
+            </h3>
+
+            <div className="space-y-3.5 text-slate-100 text-base lg:text-[16px] leading-relaxed font-semibold text-justify [text-align:justify]">
+              <p>{PERSONAL_INFO.bio}</p>
+              <p className="text-slate-200 text-sm lg:text-[14.5px]">
+                When I&apos;m not writing code, you can find me exploring new technologies, experimenting with modern UI patterns, optimizing frontend performance, or building full-stack integrations with Node.js, Express.js, and MongoDB.
+              </p>
+            </div>
+
+            <div className="w-full h-px bg-slate-800/80 my-2.5" />
+
+            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+              <span className="inline-flex items-center rounded-full bg-blue-950/40 px-3 py-1 text-xs font-medium text-blue-400 border border-blue-500/40 shadow-[0_0_15px_rgba(59,130,246,0.15)]">
+                Full-Stack Architecture
+              </span>
+              <span className="inline-flex items-center rounded-full bg-indigo-950/40 px-3 py-1 text-xs font-medium text-indigo-300 border border-indigo-500/40 shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+                Generative AI Tooling
+              </span>
+              <span className="inline-flex items-center rounded-full bg-fuchsia-950/40 px-3 py-1 text-xs font-medium text-fuchsia-300 border border-fuchsia-500/50 shadow-[0_0_15px_rgba(217,70,239,0.15)]">
+                Core Web Vitals Optimization
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Stage 3: 4 Cards on Left Side */}
+          <motion.div
+            style={{
+              opacity: cardsOpacity,
+              y: cardsY,
+            }}
+            className="absolute z-20 left-[2%] w-[48%] max-w-xl top-1/2 -translate-y-1/2 flex flex-col justify-center pointer-events-auto"
+          >
+            <div className="grid grid-cols-2 gap-4 w-full">
+              {highlights.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <div
+                    key={item.id}
+                    onClick={item.onClick}
+                    className={`h-full p-5 rounded-2xl border ${item.borderClass} ${item.hoverBorderClass} bg-[#0c1836]/90 backdrop-blur-2xl transition-all duration-300 ${item.shadowClass} ${
+                      item.isInteractive ? "cursor-pointer group/resumeCard" : ""
+                    } flex flex-col justify-between group hover:-translate-y-1 relative overflow-hidden`}
+                  >
+                    <div
+                      className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent ${item.topGradientClass} to-transparent pointer-events-none`}
+                    />
+
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div
+                          className={`h-11 w-11 rounded-xl border ${item.iconBgClass} flex items-center justify-center ${item.iconShadowClass} ${
+                            item.isInteractive ? "group-hover/resumeCard:scale-110" : "group-hover:scale-110"
+                          } transition-transform`}
+                        >
+                          <Icon className={`h-6 w-6 ${item.iconColorClass}`} />
+                        </div>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-bold border shadow-sm ${item.badgeClass}`}
+                        >
+                          {item.badge}
+                        </span>
+                      </div>
+                      <h4
+                        className={`text-base lg:text-lg font-bold text-white mb-1 tracking-tight ${
+                          item.isInteractive ? "flex items-center gap-1" : ""
+                        }`}
+                      >
+                        <span>{item.title}</span>
+                        {item.isInteractive && (
+                          <ArrowUpRight className="h-4 w-4 text-blue-400 transition-transform group-hover/resumeCard:translate-x-1 group-hover/resumeCard:-translate-y-1" />
+                        )}
+                      </h4>
+                      <p className="text-xs lg:text-[13px] text-slate-200 leading-relaxed font-normal">
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function AboutComponent({ onOpenResume }: AboutProps) {
+  const shouldReduceMotion = useReducedMotion();
+
+  if (shouldReduceMotion) {
+    return <ReducedMotionAbout onOpenResume={onOpenResume} />;
+  }
+
+  return (
+    <div id="about" className="relative w-full scroll-mt-20">
+      {/* Mobile & Tablet Flow: pure floating ASCII portrait, 100% full width, clean card descriptions */}
+      <div className="block lg:hidden">
+        <AboutMobile onOpenResume={onOpenResume} />
+      </div>
+
+      {/* Desktop Pinned Scroll Flow: pure floating ASCII portrait with 320vh stage choreography */}
+      <div className="hidden lg:block">
+        <AboutDesktop onOpenResume={onOpenResume} />
+      </div>
+    </div>
   );
 }
 
