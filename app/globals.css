@@ -40,6 +40,12 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+/* Prevent iOS momentum scrolling from causing layout issues */
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Lenis Smooth Scroll Overrides */

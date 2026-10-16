@@ -106,8 +106,8 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
               <div className="flex items-center gap-2 shrink-0">
                 <GlowBorderButton
                   as="a"
-                  href="/Raghav_Kumar_Resume.pdf"
-                  download="Raghav_Kumar_Resume.pdf"
+                  href="/Raghav_Kumar Resume.pdf"
+                  download="Raghav_Kumar Resume.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
                   glowColor="theme"
@@ -206,7 +206,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                   /* Interactive Live PDF View Frame */
                   <div className="flex flex-col items-center gap-4 w-full">
                     <div className="w-full flex items-center justify-between bg-slate-950/80 p-3 rounded-xl border border-white/10">
-                      <span className="text-xs font-mono text-slate-300">Live Preview — Raghav_Kumar_Resume.pdf</span>
+                      <span className="text-xs font-mono text-slate-300">Live Preview — Raghav_Kumar Resume.pdf</span>
                       <button
                         suppressHydrationWarning
                         onClick={() => setShowPdf(false)}
@@ -219,7 +219,7 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
 
                     <div className="w-full rounded-xl overflow-hidden border border-white/10 bg-slate-900 shadow-2xl h-[520px]">
                       <iframe
-                        src="/Raghav_Kumar_Resume.pdf#toolbar=0"
+                        src="/Raghav_Kumar Resume.pdf#toolbar=0"
                         className="w-full h-full border-0"
                         title={`${PERSONAL_INFO.name} Resume PDF`}
                       />
@@ -243,8 +243,8 @@ function ResumeModalComponent({ isOpen, onClose }: ResumeModalProps) {
                       {/* Button 1: Download PDF */}
                       <GlowBorderButton
                         as="a"
-                        href="/Raghav_Kumar_Resume.pdf"
-                        download="Raghav_Kumar_Resume.pdf"
+                        href="/Raghav_Kumar Resume.pdf"
+                        download="Raghav_Kumar Resume.pdf"
                         target="_blank"
                         rel="noopener noreferrer"
                         glowColor="theme"

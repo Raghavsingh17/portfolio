@@ -35,7 +35,7 @@ export default function Home() {
 
   return (
     <CosmicProvider>
-      <main className="relative min-h-screen">
+      <main className="relative min-h-screen w-full max-w-full overflow-x-clip">
         {/* Persistent 3D Animated Cosmic Background (remains active and fixed across all scrolls) */}
         <CosmicBackground />
 

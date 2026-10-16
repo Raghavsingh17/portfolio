@@ -2,7 +2,7 @@ import { Project, Skill, Experience, Education } from "../types/portfolio";
 
 export const SOCIAL_LINKS = {
   github: "https://github.com/Raghavsingh17",
-  linkedin: "https://www.linkedin.com/in/hiraghavsingh",
+  linkedin: "https://www.linkedin.com/in/raghavsingh21",
   instagram: "https://www.instagram.com/raghav_1521",
   email: "mailto:raghavsingh7631@gmail.com",
   emailRaw: "raghavsingh7631@gmail.com",
@@ -16,7 +16,7 @@ export const PERSONAL_INFO = {
   bio: "I’m a Frontend Developer with 2+ years of experience specializing in React.js, TypeScript, GraphQL, and modern web architectures. I specialize in building production-grade web applications with modern frontend frameworks, transforming complex, data-intensive workflows into fast, clean, and highly responsive experiences. I’ve worked on enterprise platforms handling thousands of records, with a strong focus on performance, maintainability, and user experience.",
   availableForWork: true,
   socials: SOCIAL_LINKS,
-  resumeUrl: "/Raghav_Kumar_Resume.pdf",
+  resumeUrl: "/Raghav_Kumar Resume.pdf",
 };
 
 
@@ -350,10 +350,10 @@ export const EXPERIENCES: Experience[] = [
   {
     id: "exp-1",
     role: "UI Engineer",
-    company: "Tenarai (HP Inc. - PriceHub Platform)",
+    company: "Tenarai (HP Inc.)",
     location: "Bengaluru, India",
-    period: "2025 - Present",
-    status: "Current",
+    period: "July 2025 - Sept. 2026",
+    status: "Completed",
     summary: "Contributing to HP Inc.'s enterprise PriceHub platform, engineering high-performance UI workflows, enterprise data grids, and real-time GraphQL integrations.",
     achievements: [
       "Engineered complex data table workflows using AG Grid and React.js, optimizing large dataset rendering and UI responsiveness",
@@ -364,10 +364,10 @@ export const EXPERIENCES: Experience[] = [
   },
   {
     id: "exp-2",
-    role: "Junior Full Stack Developer",
-    company: "TEKsystems",
+    role: "Jr FullStack Developer",
+    company: "TEKsystems (HP Inc.)",
     location: "Bengaluru, India",
-    period: "2024 - 2025",
+    period: "May 2024 - July 2025",
     status: "Completed",
     summary: "Developed enterprise pricing and compliance workflows, microservices, and interactive frontend interfaces for high-volume client systems.",
     achievements: [
@@ -376,6 +376,20 @@ export const EXPERIENCES: Experience[] = [
       "Implemented comprehensive unit test suites using Jest and React Testing Library to ensure production resilience",
     ],
     technologies: ["React.js", "TypeScript", "SCSS", "Graphql", "Jest", "React Testing Library"],
+  },
+  {
+    id: "exp-3",
+    role: "Self Employed",
+    company: "Code and build something in everyday.",
+    location: "Remote",
+    period: "Jan 2023 - Present",
+    status: "Current",
+    summary: "Building modern web applications, scalable interfaces, and high-performance full-stack architectures.",
+    achievements: [
+      "Designed and deployed production web applications, open-source tooling, and responsive UI components",
+      "Optimized client-side web vitals and engineered interactive full-stack integrations",
+    ],
+    technologies: ["React.js", "Next.js", "TypeScript", "Node.js", "Tailwind CSS"],
   },
 ];
 
