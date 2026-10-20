@@ -10,6 +10,7 @@ import {
   ChatSessionDetail,
   ChatSessionStatus,
 } from "@/src/types/admin";
+import { ChatConfig } from "@/src/types/chat";
 
 export const getBackendUrl = () => {
   return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
@@ -374,6 +375,31 @@ export const adminApi = {
 // 2. Visitor Chatbot APIs (Public / Visitor)
 // ==========================================
 export const chatApi = {
+  // Retrieve dynamic chatbot configuration (title, subtitle, welcome text, quick prompt chips)
+  async getConfig(): Promise<{ success: boolean; config?: ChatConfig; error?: string }> {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+      const res = await fetch(`${getBackendUrl()}/api/chat/config`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      const data = await res.json();
+      return {
+        success: res.ok && data.success !== false,
+        config: data.data || data.config,
+        error: res.ok ? undefined : data.message,
+      };
+    } catch {
+      return { success: false, error: "Network error retrieving chat config." };
+    }
+  },
+
   // Explicitly initialize a new visitor session
   async initSession(params?: {
     visitorId?: string;
@@ -381,11 +407,17 @@ export const chatApi = {
     visitorEmail?: string;
   }): Promise<{ success: boolean; sessionId?: string; error?: string }> {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+
       const res = await fetch(`${getBackendUrl()}/api/chat/session/new`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params || {}),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await res.json();
       return {
@@ -405,21 +437,32 @@ export const chatApi = {
     visitorId?: string | null;
     visitorName?: string | null;
     visitorEmail?: string | null;
+    isNameCapture?: boolean;
+    pendingMessage?: string;
     history?: Array<{ id: string; sender: "user" | "bot" | "system"; text: string }>;
   }): Promise<{
     success: boolean;
     sessionId?: string;
     response?: string;
     reply?: string;
+    actionType?: "connect-card" | "resume" | "contact" | "name-capture";
+    pendingMessage?: string;
+    visitorName?: string;
     source?: string;
     error?: string;
   }> {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 7000);
+
       const res = await fetch(`${getBackendUrl()}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await res.json();
       if (!res.ok) {
@@ -434,6 +477,9 @@ export const chatApi = {
         sessionId: data.sessionId || data.data?.sessionId,
         response: data.response || data.reply || data.data?.reply,
         reply: data.reply || data.response || data.data?.reply,
+        actionType: data.actionType || data.data?.actionType,
+        pendingMessage: data.pendingMessage || data.data?.pendingMessage,
+        visitorName: data.visitorName || data.data?.visitorName,
         source: data.data?.source,
       };
     } catch {
@@ -444,10 +490,16 @@ export const chatApi = {
   // Retrieve chat session history for visitor reconnection / refresh
   async getSessionHistory(sessionId: string): Promise<{ success: boolean; session?: ChatSessionDetail; error?: string }> {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
+
       const res = await fetch(`${getBackendUrl()}/api/chat/session/${encodeURIComponent(sessionId)}`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!res.ok) {
         return { success: false, error: "Session history not found." };
