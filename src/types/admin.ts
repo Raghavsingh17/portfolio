@@ -58,7 +58,7 @@ export interface ContactsResponse {
 // Chatbot Conversation Session Types
 // ==========================================
 
-export type ChatSessionStatus = "active" | "ended" | "archived";
+export type ChatSessionStatus = "active" | "inactive" | "ended" | "archived";
 
 export interface ChatSessionVisitorInfo {
   name: string;

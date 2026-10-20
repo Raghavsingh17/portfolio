@@ -43,6 +43,80 @@ import {
   ChatSessionStatus,
 } from "@/src/types/admin";
 
+type RealtimeChatStatus = "live" | "browsing" | "inactive" | "ended";
+
+function getSessionRealtimeStatus(session: {
+  status: ChatSessionStatus;
+  messageCount?: number;
+  lastActivityAt?: string | Date;
+  updatedAt?: string | Date;
+  createdAt?: string | Date;
+}): {
+  key: RealtimeChatStatus;
+  label: string;
+  badgeClass: string;
+  dotClass: string;
+  pulse: boolean;
+} {
+  if (session.status === "ended") {
+    return {
+      key: "ended",
+      label: "Ended",
+      badgeClass: "bg-slate-500/15 border-slate-500/30 text-slate-400",
+      dotClass: "bg-slate-400",
+      pulse: false,
+    };
+  }
+
+  if (session.status === "archived") {
+    return {
+      key: "ended",
+      label: "Archived",
+      badgeClass: "bg-zinc-500/15 border-zinc-500/30 text-zinc-400",
+      dotClass: "bg-zinc-400",
+      pulse: false,
+    };
+  }
+
+  // Calculate age since last activity
+  const now = Date.now();
+  const lastTime = new Date(
+    session.lastActivityAt || session.updatedAt || session.createdAt || now
+  ).getTime();
+  const diffSec = Math.floor((now - lastTime) / 1000);
+
+  // If status is inactive or more than 5 minutes has elapsed without heartbeat
+  if (session.status === "inactive" || diffSec > 300) {
+    return {
+      key: "inactive",
+      label: "Inactive",
+      badgeClass: "bg-amber-500/15 border-amber-500/30 text-amber-400",
+      dotClass: "bg-amber-400",
+      pulse: false,
+    };
+  }
+
+  // If visitor has sent 0 messages (browsing / looking at chat)
+  if ((session.messageCount ?? 0) === 0) {
+    return {
+      key: "browsing",
+      label: "Browsing",
+      badgeClass: "bg-yellow-400/15 border-yellow-400/30 text-yellow-300",
+      dotClass: "bg-yellow-400",
+      pulse: true,
+    };
+  }
+
+  // Actively interacting with messages within last 5 minutes
+  return {
+    key: "live",
+    label: "Live Now",
+    badgeClass: "bg-emerald-500/15 border-emerald-500/30 text-emerald-300",
+    dotClass: "bg-emerald-400",
+    pulse: true,
+  };
+}
+
 export default function AdminDashboardPage() {
   const router = useRouter();
 
@@ -642,6 +716,7 @@ export default function AdminDashboardPage() {
                   >
                     <option value="all">All Statuses</option>
                     <option value="active">Active Only</option>
+                    <option value="inactive">Inactive</option>
                     <option value="ended">Ended</option>
                     <option value="archived">Archived</option>
                   </select>
@@ -793,20 +868,21 @@ export default function AdminDashboardPage() {
                         >
                           {/* Status Badge */}
                           <td className="py-3.5 px-4 whitespace-nowrap">
-                            {session.status === "active" ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                Active
-                              </span>
-                            ) : session.status === "ended" ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-500/15 border border-slate-500/30 px-2.5 py-0.5 text-[10px] font-semibold text-slate-300">
-                                Ended
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-[10px] font-semibold text-amber-300">
-                                Archived
-                              </span>
-                            )}
+                            {(() => {
+                              const s = getSessionRealtimeStatus(session);
+                              return (
+                                <span
+                                  className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${s.badgeClass}`}
+                                >
+                                  <span
+                                    className={`w-1.5 h-1.5 rounded-full ${s.dotClass} ${
+                                      s.pulse ? "animate-pulse" : ""
+                                    }`}
+                                  />
+                                  {s.label}
+                                </span>
+                              );
+                            })()}
                           </td>
 
                           {/* Session ID */}
@@ -936,6 +1012,7 @@ export default function AdminDashboardPage() {
                                 className="bg-slate-800 border border-white/10 rounded-lg px-2 py-1 text-[11px] text-slate-300 outline-none cursor-pointer"
                               >
                                 <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
                                 <option value="ended">Ended</option>
                                 <option value="archived">Archived</option>
                               </select>
@@ -1313,19 +1390,21 @@ export default function AdminDashboardPage() {
                     <h2 className="text-base font-bold text-white tracking-tight truncate">
                       Chatbot Conversation Transcript
                     </h2>
-                    {sessionDetail && (
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                          sessionDetail.status === "active"
-                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
-                            : sessionDetail.status === "ended"
-                            ? "bg-slate-500/20 text-slate-300 border border-slate-500/30"
-                            : "bg-amber-500/20 text-amber-300 border border-amber-500/30"
-                        }`}
-                      >
-                        {sessionDetail.status}
-                      </span>
-                    )}
+                    {sessionDetail && (() => {
+                      const s = getSessionRealtimeStatus(sessionDetail);
+                      return (
+                        <span
+                          className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border inline-flex items-center gap-1.5 ${s.badgeClass}`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${s.dotClass} ${
+                              s.pulse ? "animate-pulse" : ""
+                            }`}
+                          />
+                          {s.label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
                     <span>Session ID:</span>

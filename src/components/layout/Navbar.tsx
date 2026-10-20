@@ -100,9 +100,6 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
               R
             </span>
           </div>
-          <span className="font-dancing text-2xl sm:text-3xl text-white font-bold tracking-wide">
-            Raghav
-          </span>
         </motion.a>
 
         {/* Desktop Navigation Links */}
