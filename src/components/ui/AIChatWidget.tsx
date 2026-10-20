@@ -9,7 +9,6 @@ import {
   RefreshCw,
   Minimize2,
   ArrowUpRight,
-  ChevronRight,
   FileText,
   User,
   Mail,
@@ -18,14 +17,8 @@ import {
   Loader2,
   Sparkles,
 } from "lucide-react";
-import { ChatMessage } from "@/src/types/chat";
-import {
-  QUICK_PROMPTS,
-  createMessageId,
-  getFormattedTime,
-  generateLocalResponse,
-  isConnectIntent,
-} from "@/src/utils/chatHelpers";
+import { ChatMessage, ChatConfig } from "@/src/types/chat";
+import { createMessageId, getFormattedTime } from "@/src/utils/chatHelpers";
 import {
   getOrCreateVisitorId,
   getActiveSessionId,
@@ -207,12 +200,11 @@ interface AIChatWidgetProps {
   isResumeOpen?: boolean;
 }
 
-const DEFAULT_WELCOME_MSG: Message = {
-  id: "welcome-1",
+const INITIAL_WELCOME_MSG: Message = {
+  id: "welcome-init",
   sender: "ai",
-  text: `👋 Hi! I'm **Raghav's AI Assistant**.\n\nI can answer any questions about Raghav's **2.5+ years of experience**, full technical skill matrix, education, projects, or how to hire him. How can I help you today?`,
-  timestamp: getFormattedTime(),
-  suggestions: QUICK_PROMPTS,
+  text: "",
+  timestamp: "",
 };
 
 export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetProps) {
@@ -220,12 +212,63 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
+  const [chatConfig, setChatConfig] = useState<ChatConfig | null>(null);
+  const [isConfigLoading, setIsConfigLoading] = useState(true);
+  const [configError, setConfigError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return getActiveSessionId() || startNewSessionId();
     }
     return null;
   });
+  const [visitorName, setVisitorName] = useState<string | null>(null);
+  const [nameInputValue, setNameInputValue] = useState("");
+  const [isSubmittingName, setIsSubmittingName] = useState(false);
+
+  const handleRetryConfig = () => {
+    setIsConfigLoading(true);
+    setConfigError(null);
+    chatApi
+      .getConfig()
+      .then((res) => {
+        setIsConfigLoading(false);
+        if (res.success && res.config) {
+          setChatConfig(res.config);
+        } else {
+          setConfigError("Backend service offline on port 5000");
+        }
+      })
+      .catch(() => {
+        setIsConfigLoading(false);
+        setConfigError("Backend service offline on port 5000");
+      });
+  };
+
+  // Fetch dynamic chatbot UI configuration from backend (/api/chat/config) on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    chatApi
+      .getConfig()
+      .then((res) => {
+        if (!isMounted) return;
+        setIsConfigLoading(false);
+        if (res.success && res.config) {
+          setChatConfig(res.config);
+        } else {
+          setConfigError("Backend service offline on port 5000");
+        }
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setIsConfigLoading(false);
+        setConfigError("Backend service offline on port 5000");
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Derive chat window open state (automatically closed if resume modal is active)
   const isChatOpen = isOpen && !isResumeOpen;
@@ -234,13 +277,17 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
     if (typeof window !== "undefined") {
       const activeId = getActiveSessionId();
       if (activeId) {
-        const cached = getCachedMessages(activeId);
+        const cached = getCachedMessages(activeId) as Message[] | null;
         if (cached && cached.length > 0) {
-          return cached as Message[];
+          // If only welcome message was cached (from previous old version), reset to fresh welcome
+          if (cached.length === 1 && cached[0]?.id?.startsWith("welcome")) {
+            return [INITIAL_WELCOME_MSG];
+          }
+          return cached;
         }
       }
     }
-    return [DEFAULT_WELCOME_MSG];
+    return [INITIAL_WELCOME_MSG];
   });
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -252,12 +299,27 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
     if (!activeId) return;
 
     chatApi.getSessionHistory(activeId).then((res) => {
+      if (res.success && res.session?.visitorInfo?.name && res.session.visitorInfo.name !== "Anonymous Visitor") {
+        setVisitorName(res.session.visitorInfo.name);
+      }
       if (res.success && res.session?.messages && res.session.messages.length > 0) {
         const restoredMessages: Message[] = res.session.messages.map(
-          (m: { id?: string; sender: "user" | "bot" | "system"; text: string; timestamp?: string }) => ({
+          (m: {
+            id?: string;
+            sender: "user" | "bot" | "system";
+            text: string;
+            timestamp?: string;
+            metadata?: {
+              actionType?: "resume" | "contact" | "connect-card" | "name-capture";
+              pendingMessage?: string;
+              source?: string;
+            };
+          }) => ({
             id: m.id || createMessageId(m.sender),
             sender: m.sender === "bot" ? "ai" : "user",
             text: m.text,
+            actionType: m.metadata?.actionType,
+            pendingMessage: m.metadata?.pendingMessage,
             timestamp: m.timestamp
               ? new Date(m.timestamp).toLocaleTimeString("en-US", {
                   hour: "2-digit",
@@ -298,6 +360,9 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
   }, [messages, isTyping]);
 
   const handleLeadSent = (leadName: string, leadEmail: string) => {
+    if (leadName && !visitorName) {
+      setVisitorName(leadName);
+    }
     setTimeout(() => {
       setMessages((prev) => {
         const next = [
@@ -318,9 +383,94 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
     }, 350);
   };
 
+  const handleContinueNameCapture = async (nameToSubmit?: string, pendingMsg?: string) => {
+    const trimmed = (nameToSubmit || nameInputValue).trim();
+    if (!trimmed || isSubmittingName) return;
+
+    setIsSubmittingName(true);
+
+    let activeSession = sessionId || getActiveSessionId();
+    if (!activeSession) {
+      activeSession = startNewSessionId();
+      setSessionId(activeSession);
+    }
+
+    const visitorId = getOrCreateVisitorId();
+
+    const userMsg: Message = {
+      id: createMessageId("user"),
+      sender: "user",
+      text: trimmed,
+      timestamp: getFormattedTime(),
+    };
+
+    setMessages((prev) => {
+      const next = [...prev, userMsg];
+      if (activeSession) cacheMessages(activeSession, next);
+      return next;
+    });
+
+    setNameInputValue("");
+    setInput("");
+    setIsTyping(true);
+
+    try {
+      const chatRes = await chatApi.sendMessage({
+        message: trimmed,
+        sessionId: activeSession,
+        visitorId,
+        visitorName: trimmed,
+        isNameCapture: true,
+        pendingMessage: pendingMsg,
+      });
+
+      if (chatRes.success && (chatRes.response || chatRes.reply)) {
+        const replyText = chatRes.response || chatRes.reply || "";
+        const confirmedSessionId = chatRes.sessionId || activeSession;
+
+        if (confirmedSessionId && confirmedSessionId !== sessionId) {
+          setActiveSessionId(confirmedSessionId);
+          setSessionId(confirmedSessionId);
+        }
+
+        setVisitorName(trimmed);
+
+        setTimeout(() => {
+          setMessages((prev) => {
+            const next = [
+              ...prev,
+              {
+                id: createMessageId("ai"),
+                sender: "ai" as const,
+                text: replyText,
+                timestamp: getFormattedTime(),
+                actionType: chatRes.actionType,
+              },
+            ];
+            cacheMessages(confirmedSessionId, next);
+            return next;
+          });
+          setIsTyping(false);
+          setIsSubmittingName(false);
+        }, 300);
+        return;
+      }
+    } catch {}
+
+    setIsTyping(false);
+    setIsSubmittingName(false);
+  };
+
   const handleSendMessage = async (textToSend?: string) => {
     const messageText = (textToSend || input).trim();
     if (!messageText || isTyping) return;
+
+    // If currently awaiting name capture and visitor sends message
+    const pendingCaptureMsg = messages.slice().reverse().find((m) => m.actionType === "name-capture");
+    if (pendingCaptureMsg && !visitorName) {
+      handleContinueNameCapture(messageText, pendingCaptureMsg.pendingMessage);
+      return;
+    }
 
     // Special quick action check for Resume - close chatbot and open resume modal
     if (messageText.toLowerCase().includes("resume") && onOpenResume) {
@@ -358,6 +508,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
         message: messageText,
         sessionId: activeSession,
         visitorId,
+        visitorName: visitorName || undefined,
       });
 
       if (chatRes.success && (chatRes.response || chatRes.reply)) {
@@ -369,7 +520,12 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
           setSessionId(confirmedSessionId);
         }
 
-        const connectIntent = isConnectIntent(messageText);
+        if (chatRes.visitorName) {
+          setVisitorName(chatRes.visitorName);
+        }
+
+        const actionType = chatRes.actionType;
+        const pendingMessage = chatRes.pendingMessage;
 
         setTimeout(() => {
           setMessages((prev) => {
@@ -380,7 +536,8 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                 sender: "ai" as const,
                 text: replyText,
                 timestamp: getFormattedTime(),
-                actionType: connectIntent ? ("connect-card" as const) : undefined,
+                actionType,
+                pendingMessage,
               },
             ];
             cacheMessages(confirmedSessionId, next);
@@ -391,22 +548,19 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
         return;
       }
     } catch {
-      // Fallback silently to client NLP engine if backend is temporarily disconnected
+      // Backend temporarily unreachable
     }
 
-    // Local Fallback Response if backend offline
+    // Clean graceful offline message if backend service is down
     setTimeout(() => {
-      const responseObj = generateLocalResponse(messageText);
       setMessages((prev) => {
         const next = [
           ...prev,
           {
             id: createMessageId("ai"),
             sender: "ai" as const,
-            text: responseObj.text,
+            text: "Raghav's AI assistant is temporarily unreachable. Please contact Raghav directly via the contact form on this site, or email raghavsingh7631@gmail.com.",
             timestamp: getFormattedTime(),
-            actionType: responseObj.actionType,
-            suggestions: responseObj.suggestions,
           },
         ];
         if (activeSession) cacheMessages(activeSession, next);
@@ -421,13 +575,14 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
     clearCurrentSession();
     const newSession = startNewSessionId();
     setSessionId(newSession);
+    setVisitorName(null);
+    setNameInputValue("");
 
     const resetMsg: Message = {
-      id: createMessageId("welcome"),
+      id: "welcome-" + Date.now(),
       sender: "ai",
-      text: `Chat reset! Started a new conversation session.\n\nAsk me anything about Raghav's background, skills, work experience, education, or resume!`,
+      text: "",
       timestamp: getFormattedTime(),
-      suggestions: QUICK_PROMPTS,
     };
 
     setMessages([resetMsg]);
@@ -545,19 +700,34 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                       R
                     </span>
                   </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-slate-950 z-20 shadow-sm" />
+                  <span
+                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950 z-20 shadow-sm ${
+                      configError ? "bg-amber-500" : "bg-emerald-500"
+                    }`}
+                  />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-xs sm:text-sm font-bold text-white light:text-slate-900 truncate">
-                      Raghav&apos;s AI Assistant
+                      {chatConfig?.title || (
+                        <span className="inline-block h-3.5 w-28 rounded bg-slate-800 animate-pulse" />
+                      )}
                     </h3>
-                    <span className="rounded-full bg-blue-500/20 px-1.5 py-0.2 text-[9px] font-mono text-blue-400 border border-blue-500/30">
-                      Online
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[9px] font-mono border ${
+                        configError
+                          ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+                          : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+                      }`}
+                    >
+                      {configError ? "Offline" : "Online"}
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-400 light:text-slate-500 truncate">
-                    Portfolio Knowledge & Career AI
+                    {visitorName ? `With ${visitorName} • ` : ""}
+                    {chatConfig?.subtitle || (
+                      <span className="inline-block h-2.5 w-36 rounded bg-slate-800/80 animate-pulse" />
+                    )}
                   </p>
                 </div>
               </div>
@@ -582,67 +752,199 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
 
             {/* Chat Messages Feed */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs sm:text-sm">
-              {messages.map((msg) => (
-                <div
-                  key={msg.id}
-                  className={`flex flex-col ${
-                    msg.sender === "user" ? "items-end" : "items-start"
-                  }`}
-                >
+              {messages.map((msg) => {
+                if (msg.id.startsWith("welcome")) {
+                  return (
+                    <div key={msg.id} className="flex flex-col items-start w-full space-y-4 pt-1 pb-2">
+                      <div className="space-y-1.5 w-full">
+                        <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                          {chatConfig?.welcome?.greeting ? (
+                            chatConfig.welcome.greeting
+                          ) : (
+                            <span className="inline-block h-5 w-28 rounded-md bg-slate-800 animate-pulse" />
+                          )}
+                        </h3>
+                        <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                          {chatConfig?.welcome?.title ? (
+                            chatConfig.welcome.title
+                          ) : (
+                            <span className="inline-block h-6 w-48 rounded-md bg-slate-800 animate-pulse" />
+                          )}
+                        </h2>
+                      </div>
+
+                      <div className="w-full">
+                        {chatConfig?.welcome?.description ? (
+                          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-[95%]">
+                            {chatConfig.welcome.description}
+                          </p>
+                        ) : (
+                          <div className="space-y-1.5 w-[90%]">
+                            <span className="block h-3.5 w-full rounded bg-slate-800/80 animate-pulse" />
+                            <span className="block h-3.5 w-3/4 rounded bg-slate-800/80 animate-pulse" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        {chatConfig?.welcome?.prompt ? (
+                          <p className="text-xs sm:text-sm font-medium text-slate-300">
+                            {chatConfig.welcome.prompt}
+                          </p>
+                        ) : (
+                          <span className="inline-block h-4 w-40 rounded bg-slate-800/80 animate-pulse" />
+                        )}
+                      </div>
+
+
+
+                      {isConfigLoading ? (
+                        <div className="flex flex-wrap gap-2 pt-1 w-full animate-pulse">
+                          {[1, 2, 3, 4].map((i) => (
+                            <div
+                              key={i}
+                              className="h-8 w-28 rounded-full bg-slate-800/80 border border-white/5"
+                            />
+                          ))}
+                        </div>
+                      ) : chatConfig?.quickPrompts && chatConfig.quickPrompts.length > 0 ? (
+                        <div className="flex flex-wrap gap-2 pt-1 w-full">
+                          {chatConfig.quickPrompts.map((item) => (
+                            <button
+                              key={item.label}
+                              onClick={() => handleSendMessage(item.query)}
+                              className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-medium text-blue-300 transition-all hover:bg-blue-500/20 hover:text-white hover:border-blue-500/50 active:scale-95 cursor-pointer shadow-sm shadow-blue-500/5"
+                            >
+                              <span>{item.icon}</span>
+                              <span>{item.label}</span>
+                            </button>
+                          ))}
+                        </div>
+                      ) : configError ? (
+                        <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300 w-full">
+                          <span>⚠️ {configError}</span>
+                          <button
+                            onClick={handleRetryConfig}
+                            className="underline hover:text-white font-medium ml-auto cursor-pointer"
+                          >
+                            Retry
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                }
+
+                return (
                   <div
-                    className={`max-w-[88%] rounded-2xl px-4 py-3 shadow-md leading-relaxed ${
-                      msg.sender === "user"
-                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-none"
-                        : "bg-slate-900/80 border border-white/10 text-slate-200 rounded-bl-none light:bg-slate-100 light:text-slate-800 light:border-slate-200"
+                    key={msg.id}
+                    className={`flex flex-col ${
+                      msg.sender === "user" ? "items-end" : "items-start"
                     }`}
                   >
-                    {formatMessage(msg.text)}
+                    <div
+                      className={`max-w-[88%] rounded-2xl px-4 py-3 shadow-md leading-relaxed ${
+                        msg.sender === "user"
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-br-none"
+                          : "bg-slate-900/80 border border-white/10 text-slate-200 rounded-bl-none light:bg-slate-100 light:text-slate-800 light:border-slate-200"
+                      }`}
+                    >
+                      {formatMessage(msg.text)}
 
-                    {/* Interactive Button for Resume Action */}
-                    {msg.actionType === "resume" && onOpenResume && (
-                      <div className="mt-3 pt-2 border-t border-white/10">
-                        <button
-                          onClick={() => {
-                            setIsOpen(false);
-                            onOpenResume();
-                          }}
-                          className="flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-500 transition-colors cursor-pointer"
-                        >
-                          <FileText className="h-3.5 w-3.5" />
-                          <span>Open Live Resume Modal</span>
-                        </button>
-                      </div>
-                    )}
+                      {/* Interactive Button for Resume Action */}
+                      {msg.actionType === "resume" && onOpenResume && (
+                        <div className="mt-3 pt-2 border-t border-white/10">
+                          <button
+                            onClick={() => {
+                              setIsOpen(false);
+                              onOpenResume();
+                            }}
+                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-semibold text-white shadow-md hover:bg-blue-500 transition-colors cursor-pointer"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            <span>Open Live Resume Modal</span>
+                          </button>
+                        </div>
+                      )}
 
-                    {/* Interactive Connect Form Card */}
-                    {msg.actionType === "connect-card" && (
-                      <div className="mt-3 pt-2 border-t border-white/10">
-                        <ChatConnectCard sessionId={sessionId} onSent={handleLeadSent} />
+                      {/* Interactive Connect Form Card */}
+                      {msg.actionType === "connect-card" && (
+                        <div className="mt-3 pt-2 border-t border-white/10">
+                          <ChatConnectCard sessionId={sessionId} onSent={handleLeadSent} />
+                        </div>
+                      )}
+
+                      {/* Interactive Name Capture Card (Steps 3 & 4) */}
+                      {msg.actionType === "name-capture" && (
+                        <div className="mt-3 pt-2 border-t border-white/10 w-full">
+                          {!visitorName ? (
+                            <form
+                              onSubmit={(e) => {
+                                e.preventDefault();
+                                handleContinueNameCapture(nameInputValue, msg.pendingMessage);
+                              }}
+                              className="flex flex-col sm:flex-row gap-2 w-full pt-1"
+                            >
+                              <div className="relative flex-1">
+                                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-blue-400" />
+                                <input
+                                  type="text"
+                                  value={nameInputValue}
+                                  onChange={(e) => setNameInputValue(e.target.value)}
+                                  placeholder="Enter your name (e.g. Aman Sharma)"
+                                  maxLength={50}
+                                  autoFocus
+                                  className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-800/90 border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors shadow-inner"
+                                />
+                              </div>
+                              <button
+                                type="submit"
+                                disabled={!nameInputValue.trim() || isSubmittingName}
+                                className="px-4 py-2 text-xs font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white transition-all shadow-md shadow-blue-500/20 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap flex items-center justify-center gap-1.5"
+                              >
+                                {isSubmittingName ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                                <span>Continue</span>
+                              </button>
+                            </form>
+                          ) : (
+                            <div className="flex items-center gap-2 pt-1 text-xs text-emerald-300">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                              <span>
+                                Introduced as <strong className="text-white font-medium">{visitorName}</strong>
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <span className="mt-1 px-1 text-[10px] text-slate-500 light:text-slate-400">
+                      {msg.timestamp}
+                    </span>
+
+                    {/* Suggestion Prompt Chips */}
+                    {msg.suggestions && msg.suggestions.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2 w-full">
+                        {msg.suggestions.map((prompt, pIdx) => {
+                          const item = (chatConfig?.quickPrompts || []).find(
+                            (i) => i.query === prompt || i.label === prompt
+                          );
+                          return (
+                            <button
+                              key={pIdx}
+                              onClick={() => handleSendMessage(item ? item.query : prompt)}
+                              className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-300 transition-all hover:bg-blue-500/20 hover:text-white hover:border-blue-500/50 active:scale-95 cursor-pointer shadow-sm shadow-blue-500/5"
+                            >
+                              {item?.icon && <span>{item.icon}</span>}
+                              <span>{item?.label || prompt}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
-
-                  <span className="mt-1 px-1 text-[10px] text-slate-500 light:text-slate-400">
-                    {msg.timestamp}
-                  </span>
-
-                  {/* Suggestion Prompt Chips */}
-                  {msg.suggestions && msg.suggestions.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1.5 w-full">
-                      {msg.suggestions.map((prompt, pIdx) => (
-                        <button
-                          key={pIdx}
-                          onClick={() => handleSendMessage(prompt)}
-                          className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-300 transition-all hover:bg-blue-500/20 hover:text-white hover:border-blue-500/50 light:border-blue-200 light:bg-blue-50 light:text-blue-700"
-                        >
-                          <span>{prompt}</span>
-                          <ChevronRight className="h-3 w-3" />
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
 
               {/* Typing Indicator */}
               {isTyping && (
@@ -669,7 +971,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask about skills, experience, education..."
+                  placeholder={chatConfig?.placeholder || "Ask me anything about Raghav..."}
                   className="flex-1 bg-transparent py-1.5 text-xs sm:text-sm text-white placeholder-slate-500 outline-none light:text-slate-900 light:placeholder-slate-400"
                 />
                 {input.trim() && !isTyping ? (

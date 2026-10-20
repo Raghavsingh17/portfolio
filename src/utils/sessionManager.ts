@@ -86,6 +86,7 @@ export function clearCurrentSession(): void {
     sessionStorage.removeItem(SESSION_ID_KEY);
     localStorage.removeItem(SESSION_ID_KEY);
     sessionStorage.removeItem(MESSAGES_CACHE_KEY);
+    localStorage.removeItem(VISITOR_ID_KEY);
   } catch {}
 }
 
