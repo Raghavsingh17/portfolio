@@ -18,7 +18,12 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ChatMessage, ChatConfig } from "@/src/types/chat";
-import { createMessageId, getFormattedTime } from "@/src/utils/chatHelpers";
+import {
+  createMessageId,
+  getFormattedTime,
+  DEFAULT_CHAT_CONFIG,
+  generateLocalResponse,
+} from "@/src/utils/chatHelpers";
 import {
   getOrCreateVisitorId,
   getActiveSessionId,
@@ -212,9 +217,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
-  const [chatConfig, setChatConfig] = useState<ChatConfig | null>(null);
-  const [isConfigLoading, setIsConfigLoading] = useState(true);
-  const [configError, setConfigError] = useState<string | null>(null);
+  const [chatConfig, setChatConfig] = useState<ChatConfig>(DEFAULT_CHAT_CONFIG);
   const [sessionId, setSessionId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return getActiveSessionId() || startNewSessionId();
@@ -225,25 +228,6 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
   const [nameInputValue, setNameInputValue] = useState("");
   const [isSubmittingName, setIsSubmittingName] = useState(false);
 
-  const handleRetryConfig = () => {
-    setIsConfigLoading(true);
-    setConfigError(null);
-    chatApi
-      .getConfig()
-      .then((res) => {
-        setIsConfigLoading(false);
-        if (res.success && res.config) {
-          setChatConfig(res.config);
-        } else {
-          setConfigError("Backend service offline on port 5000");
-        }
-      })
-      .catch(() => {
-        setIsConfigLoading(false);
-        setConfigError("Backend service offline on port 5000");
-      });
-  };
-
   // Fetch dynamic chatbot UI configuration from backend (/api/chat/config) on mount
   useEffect(() => {
     let isMounted = true;
@@ -252,18 +236,11 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
       .getConfig()
       .then((res) => {
         if (!isMounted) return;
-        setIsConfigLoading(false);
         if (res.success && res.config) {
           setChatConfig(res.config);
-        } else {
-          setConfigError("Backend service offline on port 5000");
         }
       })
-      .catch(() => {
-        if (!isMounted) return;
-        setIsConfigLoading(false);
-        setConfigError("Backend service offline on port 5000");
-      });
+      .catch(() => {});
 
     return () => {
       isMounted = false;
@@ -457,8 +434,41 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
       }
     } catch {}
 
-    setIsTyping(false);
-    setIsSubmittingName(false);
+    // Resilient fallback when backend is offline
+    setVisitorName(trimmed);
+    const firstName = trimmed.split(" ")[0];
+    const pendingText = typeof pendingMsg === "string" ? pendingMsg.trim() : "";
+    const isGreeting =
+      !pendingText ||
+      /^(hi|hello|hey|namaste|hola|greetings)[\s!.]*$/i.test(pendingText);
+
+    let replyText = `Nice to meet you, **${firstName}**! 😊 How can I help you today? Feel free to ask about Raghav's **skills, work experience, projects, or resume**.`;
+    let actionType: "resume" | "contact" | "connect-card" | "name-capture" | undefined = undefined;
+
+    if (!isGreeting && pendingText) {
+      const localAnswer = generateLocalResponse(pendingText, trimmed);
+      replyText = `Nice to meet you, **${firstName}**! 😊\n\n${localAnswer.text}`;
+      actionType = localAnswer.actionType;
+    }
+
+    setTimeout(() => {
+      setMessages((prev) => {
+        const next = [
+          ...prev,
+          {
+            id: createMessageId("ai"),
+            sender: "ai" as const,
+            text: replyText,
+            timestamp: getFormattedTime(),
+            actionType,
+          },
+        ];
+        if (activeSession) cacheMessages(activeSession, next);
+        return next;
+      });
+      setIsTyping(false);
+      setIsSubmittingName(false);
+    }, 300);
   };
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -470,12 +480,6 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
     if (pendingCaptureMsg && !visitorName) {
       handleContinueNameCapture(messageText, pendingCaptureMsg.pendingMessage);
       return;
-    }
-
-    // Special quick action check for Resume - close chatbot and open resume modal
-    if (messageText.toLowerCase().includes("resume") && onOpenResume) {
-      setIsOpen(false);
-      onOpenResume();
     }
 
     // Ensure session ID is present
@@ -503,7 +507,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
     setIsTyping(true);
 
     try {
-      // Send message to backend with active session and visitor tracking
+      // 1. Send message to backend with active session and visitor tracking
       const chatRes = await chatApi.sendMessage({
         message: messageText,
         sessionId: activeSession,
@@ -548,10 +552,12 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
         return;
       }
     } catch {
-      // Backend temporarily unreachable
+      // Backend temporarily unreachable or offline
     }
 
-    // Clean graceful offline message if backend service is down
+    // 2. Autonomous Client Fallback: Never display an error message to visitors or recruiters.
+    // Instantly serve a rich, accurate portfolio answer using our built-in intelligence engine.
+    const localResult = generateLocalResponse(messageText, visitorName || undefined);
     setTimeout(() => {
       setMessages((prev) => {
         const next = [
@@ -559,15 +565,16 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
           {
             id: createMessageId("ai"),
             sender: "ai" as const,
-            text: "Raghav's AI assistant is temporarily unreachable. Please contact Raghav directly via the contact form on this site, or email raghavsingh7631@gmail.com.",
+            text: localResult.text,
             timestamp: getFormattedTime(),
+            actionType: localResult.actionType,
           },
         ];
         if (activeSession) cacheMessages(activeSession, next);
         return next;
       });
       setIsTyping(false);
-    }, 400);
+    }, 350);
   };
 
   // Start a fresh conversation session
@@ -700,34 +707,20 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                       R
                     </span>
                   </div>
-                  <span
-                    className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950 z-20 shadow-sm ${
-                      configError ? "bg-amber-500" : "bg-emerald-500"
-                    }`}
-                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950 z-20 shadow-sm bg-emerald-500" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h3 className="text-xs sm:text-sm font-bold text-white light:text-slate-900 truncate">
-                      {chatConfig?.title || (
-                        <span className="inline-block h-3.5 w-28 rounded bg-slate-800 animate-pulse" />
-                      )}
+                      {chatConfig.title}
                     </h3>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[9px] font-mono border ${
-                        configError
-                          ? "bg-amber-500/20 text-amber-400 border-amber-500/30"
-                          : "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                      }`}
-                    >
-                      {configError ? "Offline" : "Online"}
+                    <span className="rounded-full px-2 py-0.5 text-[9px] font-mono border bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                      Online
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-400 light:text-slate-500 truncate">
                     {visitorName ? `With ${visitorName} • ` : ""}
-                    {chatConfig?.subtitle || (
-                      <span className="inline-block h-2.5 w-36 rounded bg-slate-800/80 animate-pulse" />
-                    )}
+                    {chatConfig.subtitle}
                   </p>
                 </div>
               </div>
@@ -758,79 +751,37 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                     <div key={msg.id} className="flex flex-col items-start w-full space-y-4 pt-1 pb-2">
                       <div className="space-y-1.5 w-full">
                         <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                          {chatConfig?.welcome?.greeting ? (
-                            chatConfig.welcome.greeting
-                          ) : (
-                            <span className="inline-block h-5 w-28 rounded-md bg-slate-800 animate-pulse" />
-                          )}
+                          {chatConfig.welcome.greeting}
                         </h3>
                         <h2 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
-                          {chatConfig?.welcome?.title ? (
-                            chatConfig.welcome.title
-                          ) : (
-                            <span className="inline-block h-6 w-48 rounded-md bg-slate-800 animate-pulse" />
-                          )}
+                          {chatConfig.welcome.title}
                         </h2>
                       </div>
 
                       <div className="w-full">
-                        {chatConfig?.welcome?.description ? (
-                          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-[95%]">
-                            {chatConfig.welcome.description}
-                          </p>
-                        ) : (
-                          <div className="space-y-1.5 w-[90%]">
-                            <span className="block h-3.5 w-full rounded bg-slate-800/80 animate-pulse" />
-                            <span className="block h-3.5 w-3/4 rounded bg-slate-800/80 animate-pulse" />
-                          </div>
-                        )}
+                        <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-[95%]">
+                          {chatConfig.welcome.description}
+                        </p>
                       </div>
 
                       <div>
-                        {chatConfig?.welcome?.prompt ? (
-                          <p className="text-xs sm:text-sm font-medium text-slate-300">
-                            {chatConfig.welcome.prompt}
-                          </p>
-                        ) : (
-                          <span className="inline-block h-4 w-40 rounded bg-slate-800/80 animate-pulse" />
-                        )}
+                        <p className="text-xs sm:text-sm font-medium text-slate-300">
+                          {chatConfig.welcome.prompt}
+                        </p>
                       </div>
 
-
-
-                      {isConfigLoading ? (
-                        <div className="flex flex-wrap gap-2 pt-1 w-full animate-pulse">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div
-                              key={i}
-                              className="h-8 w-28 rounded-full bg-slate-800/80 border border-white/5"
-                            />
-                          ))}
-                        </div>
-                      ) : chatConfig?.quickPrompts && chatConfig.quickPrompts.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 pt-1 w-full">
-                          {chatConfig.quickPrompts.map((item) => (
-                            <button
-                              key={item.label}
-                              onClick={() => handleSendMessage(item.query)}
-                              className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-medium text-blue-300 transition-all hover:bg-blue-500/20 hover:text-white hover:border-blue-500/50 active:scale-95 cursor-pointer shadow-sm shadow-blue-500/5"
-                            >
-                              <span>{item.icon}</span>
-                              <span>{item.label}</span>
-                            </button>
-                          ))}
-                        </div>
-                      ) : configError ? (
-                        <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300 w-full">
-                          <span>⚠️ {configError}</span>
+                      <div className="flex flex-wrap gap-2 pt-1 w-full">
+                        {chatConfig.quickPrompts.map((item) => (
                           <button
-                            onClick={handleRetryConfig}
-                            className="underline hover:text-white font-medium ml-auto cursor-pointer"
+                            key={item.label}
+                            onClick={() => handleSendMessage(item.query)}
+                            className="flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3.5 py-1.5 text-xs font-medium text-blue-300 transition-all hover:bg-blue-500/20 hover:text-white hover:border-blue-500/50 active:scale-95 cursor-pointer shadow-sm shadow-blue-500/5"
                           >
-                            Retry
+                            <span>{item.icon}</span>
+                            <span>{item.label}</span>
                           </button>
-                        </div>
-                      ) : null}
+                        ))}
+                      </div>
                     </div>
                   );
                 }

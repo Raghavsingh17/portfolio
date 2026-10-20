@@ -13,7 +13,21 @@ import {
 import { ChatConfig } from "@/src/types/chat";
 
 export const getBackendUrl = () => {
-  return process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+  const envUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+  if (envUrl && envUrl.trim()) {
+    return envUrl.trim().replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    // If running in browser on localhost, default to local port 5000
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      return "http://localhost:5000";
+    }
+    // On production (e.g. Vercel), avoid mixed-content error to http://localhost:5000
+    return "";
+  }
+
+  return "http://localhost:5000";
 };
 
 // Standard Anti-CSRF and content headers for all admin requests with dual Bearer token fallback
@@ -379,7 +393,7 @@ export const chatApi = {
   async getConfig(): Promise<{ success: boolean; config?: ChatConfig; error?: string }> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4000);
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
 
       const res = await fetch(`${getBackendUrl()}/api/chat/config`, {
         method: "GET",
@@ -408,7 +422,7 @@ export const chatApi = {
   }): Promise<{ success: boolean; sessionId?: string; error?: string }> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const res = await fetch(`${getBackendUrl()}/api/chat/session/new`, {
         method: "POST",
@@ -453,7 +467,7 @@ export const chatApi = {
   }> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 7000);
+      const timeoutId = setTimeout(() => controller.abort(), 4500);
 
       const res = await fetch(`${getBackendUrl()}/api/chat`, {
         method: "POST",
