@@ -547,5 +547,56 @@ export const chatApi = {
       return { success: false, error: "Network error updating visitor details." };
     }
   },
+
+  // Open / Initialize session when chat widget bubble is clicked
+  async openSession(params?: {
+    sessionId?: string | null;
+    visitorId?: string | null;
+    visitorName?: string | null;
+  }): Promise<{ success: boolean; sessionId?: string; isNew?: boolean; error?: string }> {
+    try {
+      const res = await fetch(`${getBackendUrl()}/api/chat/session/init`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params || {}),
+      });
+      const data = await res.json();
+      return {
+        success: res.ok,
+        sessionId: data.data?.sessionId,
+        isNew: data.data?.isNew,
+        error: res.ok ? undefined : data.message,
+      };
+    } catch {
+      return { success: false, error: "Network error initializing session on open." };
+    }
+  },
+
+  // Periodic heartbeat ping to maintain online presence
+  async sendHeartbeat(sessionId: string): Promise<{ success: boolean }> {
+    try {
+      const res = await fetch(`${getBackendUrl()}/api/chat/session/${encodeURIComponent(sessionId)}/heartbeat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      return { success: res.ok };
+    } catch {
+      return { success: false };
+    }
+  },
+
+  // Record user closing chat widget or unloading page
+  sendLeave(sessionId: string): void {
+    try {
+      const url = `${getBackendUrl()}/api/chat/session/${encodeURIComponent(sessionId)}/leave`;
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        navigator.sendBeacon(url);
+      } else {
+        fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true }).catch(() => {});
+      }
+    } catch {
+      // Ignore background unload errors
+    }
+  },
 };
 

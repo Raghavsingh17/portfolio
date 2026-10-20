@@ -315,15 +315,71 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
     });
   }, [sessionId]);
 
+  // Check if visitor has actually interacted and sent at least one message
+  const hasConversationStarted = messages.some((m) => m.sender === "user");
+
   const handleToggleOpen = () => {
     setIsOpen((prev) => {
       const next = !prev;
       if (next) {
         setHasUnread(false);
+      } else if (hasConversationStarted) {
+        const currentSession = sessionId || getActiveSessionId();
+        if (currentSession) {
+          chatApi.sendLeave(currentSession);
+        }
       }
       return next;
     });
   };
+
+  // Heartbeat Ping: Maintain online presence only when conversation has started
+  useEffect(() => {
+    if (!isChatOpen || !hasConversationStarted) return;
+
+    const sendPing = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        const currentSession = sessionId || getActiveSessionId();
+        if (currentSession) {
+          chatApi.sendHeartbeat(currentSession);
+        }
+      }
+    };
+
+    const initialTimer = setTimeout(sendPing, 8000);
+    const interval = setInterval(sendPing, 45000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        sendPing();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isChatOpen, hasConversationStarted, sessionId]);
+
+  // Tab Close / Unload tracking: Send leave beacon only if conversation was started
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isChatOpen && hasConversationStarted) {
+        const currentSession = sessionId || getActiveSessionId();
+        if (currentSession) {
+          chatApi.sendLeave(currentSession);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isChatOpen, hasConversationStarted, sessionId]);
 
   useEffect(() => {
     if (isChatOpen) {
@@ -579,6 +635,13 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
 
   // Start a fresh conversation session
   const handleClearChat = () => {
+    if (hasConversationStarted) {
+      const oldSession = sessionId || getActiveSessionId();
+      if (oldSession) {
+        chatApi.sendLeave(oldSession);
+      }
+    }
+
     clearCurrentSession();
     const newSession = startNewSessionId();
     setSessionId(newSession);
@@ -734,7 +797,15 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                   <RefreshCw className="h-3.5 w-3.5" />
                 </button>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    if (hasConversationStarted) {
+                      const currentSession = sessionId || getActiveSessionId();
+                      if (currentSession) {
+                        chatApi.sendLeave(currentSession);
+                      }
+                    }
+                    setIsOpen(false);
+                  }}
                   title="Close"
                   className="rounded-lg p-1.5 hover:bg-white/10 hover:text-white transition-colors"
                 >
@@ -842,7 +913,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
                                   type="text"
                                   value={nameInputValue}
                                   onChange={(e) => setNameInputValue(e.target.value)}
-                                  placeholder="Enter your name (e.g. Aman Sharma)"
+                                  placeholder="Enter your name (e.g. Raghav Singh)"
                                   maxLength={50}
                                   autoFocus
                                   className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-800/90 border border-white/10 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 transition-colors shadow-inner"
