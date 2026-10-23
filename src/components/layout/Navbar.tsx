@@ -4,6 +4,7 @@ import { useState, useEffect, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
+import { OrbitLogo } from "@/src/components/animations/OrbitLogo";
 
 const NAV_ITEMS = [
   { label: "About", href: "#about" },
@@ -95,11 +96,7 @@ function NavbarComponent({ onOpenResume }: NavbarProps) {
           whileTap={{ scale: 0.95 }}
           className="group flex items-center gap-3 cursor-pointer"
         >
-          <div className="w-9 h-9 rounded-xl border border-white/15 bg-slate-950/80 backdrop-blur-md flex items-center justify-center text-white font-extrabold text-base leading-none shadow-lg shadow-blue-500/20 light:bg-white light:border-slate-300 light:text-slate-900">
-            <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-lg font-mono">
-              R
-            </span>
-          </div>
+          <OrbitLogo size={64} />
         </motion.a>
 
         {/* Desktop Navigation Links */}
