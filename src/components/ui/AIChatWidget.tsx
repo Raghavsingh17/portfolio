@@ -18,6 +18,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ChatMessage, ChatConfig } from "@/src/types/chat";
+import { OrbitLogo } from "@/src/components/animations/OrbitLogo";
 import {
   createMessageId,
   getFormattedTime,
@@ -721,11 +722,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
           whileTap={{ scale: 0.94 }}
           className="group relative flex items-center justify-center rounded-full"
         >
-          <div className="w-14 h-14 rounded-full border-2 border-white/20 bg-slate-950 flex items-center justify-center text-white font-extrabold shadow-[0_0_25px_var(--accent-glow)] light:bg-white light:border-slate-300">
-            <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-2xl font-mono">
-              R
-            </span>
-          </div>
+          <OrbitLogo size={96} />
 
           {/* Close X Badge when modal is open */}
           {isChatOpen && (
@@ -765,11 +762,7 @@ export function PortfolioChatbot({ onOpenResume, isResumeOpen }: AIChatWidgetPro
             <div className="flex items-center justify-between border-b border-white/10 bg-slate-950/80 px-4 py-3 light:border-slate-200 light:bg-slate-50">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="relative flex shrink-0">
-                  <div className="w-10 h-10 rounded-xl border border-white/15 bg-slate-950 flex items-center justify-center text-white font-extrabold text-base leading-none shadow-lg shadow-cyan-500/20 light:bg-white light:border-slate-300 light:text-slate-900">
-                    <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-base font-mono">
-                      R
-                    </span>
-                  </div>
+                    <OrbitLogo size={64} />
                   <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950 z-20 shadow-sm bg-emerald-500" />
                 </div>
                 <div className="min-w-0">

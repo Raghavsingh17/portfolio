@@ -4,6 +4,7 @@ import { useEffect, useState, memo } from "react";
 import { ArrowUp } from "lucide-react";
 import { MagneticButton } from "@/src/components/animations/MagneticButton";
 import { GlowBorderButton } from "@/src/components/reactbits/GlowBorderButton";
+import { OrbitLogo } from "@/src/components/animations/OrbitLogo";
 import { motion } from "framer-motion";
 
 function FooterComponent() {
@@ -43,18 +44,14 @@ function FooterComponent() {
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
-              whileHover={{ scale: 1.08, rotate: 2 }}
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="group flex items-center justify-center gap-3 text-xl font-bold tracking-tight text-white light:text-slate-900"
+              className="group flex items-center justify-center gap-2 text-xl font-bold tracking-tight text-white light:text-slate-900"
             >
-              <div className="w-9 h-9 rounded-xl border border-white/15 bg-slate-950 flex items-center justify-center text-white font-extrabold text-lg leading-none shadow-lg shadow-blue-500/20 light:bg-white light:border-slate-300 light:text-slate-900">
-                <span className="bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent font-extrabold text-lg font-mono">
-                  R
-                </span>
-              </div>
+              <OrbitLogo size={52} />
               <span className="text-lg font-extrabold tracking-tight text-white light:text-slate-900">
-                Raghav<span className="text-blue-500">.dev</span>
+                Raghav
               </span>
             </motion.a>
 
